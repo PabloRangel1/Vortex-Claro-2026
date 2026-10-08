@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vortex — Protótipo de Frontend</title>
+<meta name="description" content="Protótipo navegável do Vortex: dashboard do atendente, simulador App Claro e simulador WhatsApp."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ============================================================
+   TOKENS — espelham o que virará @theme no Tailwind v4
+   ============================================================ */
+:root{
+  --bg-void:#0A0E17;
+  --bg-panel:#111827;
+  --bg-elev:#161F30;
+  --bg-input:#0F1725;
+  --border:#1F2A3D;
+  --border-soft:#18202F;
+
+  --accent:#E11D2E;
+  --accent-hi:#FF3B4E;
+  --accent-soft:rgba(225,29,46,.10);
+  --accent-line:rgba(225,29,46,.24);
+
+  --client:#3B82F6;
+  --client-soft:rgba(59,130,246,.10);
+  --client-line:rgba(59,130,246,.26);
+
+  --ok:#22C55E;
+  --warn:#F59E0B;
+  --crit:#E11D2E;
+
+  --txt-hi:#E6EDF9;
+  --txt:#B9C6DA;
+  --txt-dim:#6B7F9E;
+  --txt-ghost:#42556F;
+
+  --f-display:'Sora',sans-serif;
+  --f-ui:'DM Sans',sans-serif;
+  --f-mono:'JetBrains Mono',monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg-void);font-family:var(--f-ui);color:var(--txt);-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font-family:inherit}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(59,130,246,.18);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:rgba(59,130,246,.32)}
+
+/* animações */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideR{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@keyframes slideL{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.45)}}
+@keyframes ringPulse{0%{box-shadow:0 0 0 0 var(--accent-soft)}70%{box-shadow:0 0 0 10px rgba(225,29,46,0)}100%{box-shadow:0 0 0 0 rgba(225,29,46,0)}}
+@keyframes typing{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.afu{animation:fadeUp .34s cubic-bezier(.16,1,.3,1) both}
+.afi{animation:fadeIn .3s ease-out both}
+.asr{animation:slideR .32s cubic-bezier(.16,1,.3,1) both}
+.asl{animation:slideL .32s cubic-bezier(.16,1,.3,1) both}
+.pd{animation:pulseDot 2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.topbar{height:56px;background:var(--bg-panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.brand-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#8E0F1C);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(225,29,46,.28)}
+.brand-text{font-family:var(--f-display);font-size:16px;font-weight:800;color:var(--txt-hi);letter-spacing:-.4px}
+.brand-text i{font-style:normal;color:var(--accent-hi)}
+.vr{width:1px;height:22px;background:var(--border)}
+.brand-sub{font-size:11px;color:var(--txt-ghost);font-weight:600;letter-spacing:.2px}
+
+.tabs{display:flex;gap:3px;background:var(--bg-void);padding:3px;border-radius:11px;border:1px solid var(--border)}
+.tab{padding:7px 15px;border-radius:8px;border:none;background:transparent;color:var(--txt-dim);
+  font-size:12px;font-weight:600;cursor:pointer;transition:.16s;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tab:hover{color:var(--txt);background:rgba(255,255,255,.03)}
+.tab.on{background:var(--bg-elev);color:var(--txt-hi);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.tab.on .tdot{background:var(--accent)}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--txt-ghost);transition:.16s}
+
+.tb-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.conn{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:20px;
+  background:var(--bg-void);border:1px solid var(--border)}
+.conn .dot{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.conn span{font-size:10px;color:var(--txt-dim);font-weight:600}
+.conn b{font-family:var(--f-mono);font-size:10px;color:var(--txt-ghost);font-weight:500}
+.agent{display:flex;align-items:center;gap:9px;padding-left:12px;border-left:1px solid var(--border)}
+.agent .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--client),#1D4ED8);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;font-family:var(--f-display)}
+.agent p{font-size:11px;font-weight:700;color:var(--txt)}
+.agent span{font-size:9px;color:var(--txt-ghost)}
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+.view{display:none;height:calc(100vh - 56px)}
+.view.on{display:flex}
+
+/* ---------- DASHBOARD ---------- */
+#v-dash{overflow:hidden}
+.col-queue{width:302px;background:var(--bg-panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0}
+.col-chat{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg-void)}
+.col-intel{width:346px;background:var(--bg-panel);border-left:1px solid var(--border);
+  overflow-y:auto;flex-shrink:0}
+@media(max-width:1500px){.col-queue{width:262px}.col-intel{width:308px}}
+
+.sec-title{font-size:10px;font-weight:700;color:var(--txt-dim);text-transform:uppercase;
+  letter-spacing:1.3px;display:flex;align-items:center;gap:7px}
+
+/* fila */
+.q-head{padding:15px 16px;border-bottom:1px solid var(--border)}
+.q-head .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.q-count{font-family:var(--f-mono);font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;
+  background:var(--accent-soft);color:var(--accent-hi);border:1px solid var(--accent-line)}
+.q-search{position:relative}
+.q-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--txt-ghost)}
+.q-search input{width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:9px;
+  color:var(--txt);padding:9px 12px 9px 33px;font-size:12px;transition:.18s}
+.q-search input:focus{outline:none;border-color:var(--client);box-shadow:0 0 0 3px var(--client-soft)}
+.q-search input::placeholder{color:var(--txt-ghost)}
+
+.q-list{flex:1;overflow-y:auto;padding:6px 5px}
+.qi{padding:11px 12px;border-radius:10px;cursor:pointer;transition:.15s;border:1px solid transparent;margin-bottom:3px;position:relative}
+.qi:hover{background:rgba(59,130,246,.05);border-color:rgba(59,130,246,.12)}
+.qi.on{background:var(--accent-soft);border-color:var(--accent-line)}
+.qi.on::before{content:'';position:absolute;left:0;top:11px;bottom:11px;width:2px;border-radius:2px;background:var(--accent)}
+.qi .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.qi .nm{font-size:12.5px;font-weight:700;color:var(--txt-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--f-display)}
+.qi .pv{font-size:11px;color:var(--txt-dim);line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:7px}
+.qi .bot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.qi .wait{font-family:var(--f-mono);font-size:9.5px;color:var(--txt-ghost);display:flex;align-items:center;gap:4px}
+
+.q-stats{padding:12px 16px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.q-stats .lb{font-size:8.5px;color:var(--txt-ghost);text-transform:uppercase;letter-spacing:1.1px;font-weight:700}
+.q-stats .vl{font-family:var(--f-mono);font-size:14px;font-weight:800;margin-top:3px}
+
+/* pills */
+.pill{font-size:8.5px;font-weight:800;padding:2.5px 7px;border-radius:5px;letter-spacing:.7px;
+  text-transform:uppercase;white-space:nowrap;font-family:var(--f-display)}
+.p-app{background:var(--client-soft);color:#7FB0FF;border:1px solid var(--client-line)}
+.p-wa{background:rgba(34,197,94,.10);color:#5FDC90;border:1px solid rgba(34,197,94,.26)}
+.p-bot{background:rgba(139,92,246,.10);color:#B49BFF;border:1px solid rgba(139,92,246,.26)}
+.p-agent{background:var(--accent-soft);color:var(--accent-hi);border:1px solid var(--accent-line)}
+
+.mini-score{font-family:var(--f-mono);font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px}
+
+/* chat */
+.c-head{padding:12px 20px;border-bottom:1px solid var(--border);background:var(--bg-panel);
+  display:flex;align-items:center;justify-content:space-between;min-height:60px;flex-shrink:0}
+.c-head .cli{display:flex;align-items:center;gap:12px;min-width:0}
+.c-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--client),#1D4ED8);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;
+  flex-shrink:0;font-family:var(--f-display)}
+.c-nm{font-family:var(--f-display);font-size:14.5px;font-weight:700;color:var(--txt-hi)}
+.c-sub{font-family:var(--f-mono);font-size:10px;color:var(--txt-ghost);margin-top:2px}
+
+.btn{border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:.16s;
+  display:inline-flex;align-items:center;gap:6px;padding:8px 13px;white-space:nowrap}
+.btn-s{background:var(--bg-elev);border:1px solid var(--border);color:var(--txt-dim)}
+.btn-s:hover{border-color:var(--client-line);color:var(--txt-hi);background:#1B2438}
+.btn-p{background:var(--accent);border:1px solid var(--accent);color:#fff;box-shadow:0 3px 14px rgba(225,29,46,.26)}
+.btn-p:hover{background:var(--accent-hi);box-shadow:0 4px 18px rgba(225,29,46,.4)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.handoff{margin:12px 20px 0;padding:12px 15px;border-radius:11px;display:flex;align-items:center;gap:13px;
+  background:linear-gradient(120deg,rgba(225,29,46,.09),rgba(225,29,46,.02));border:1px solid var(--accent-line)}
+.handoff .ico{width:36px;height:36px;border-radius:9px;background:var(--accent-soft);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;animation:ringPulse 2.6s infinite}
+.handoff .tt{font-family:var(--f-display);font-size:11.5px;font-weight:700;color:var(--accent-hi)}
+.handoff .ds{font-size:10.5px;color:var(--txt-dim);margin-top:2px;line-height:1.4}
+
+.c-msgs{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:11px}
+.bub{border-radius:12px;padding:11px 15px;max-width:min(540px,72%)}
+.bub .meta{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.bub .meta span{font-family:var(--f-mono);font-size:9px;color:var(--txt-ghost)}
+.bub p{font-size:13px;line-height:1.62;color:var(--txt)}
+.b-cli{background:var(--bg-elev);border:1px solid var(--border);border-bottom-left-radius:3px}
+.b-cli.wa{border-left:2px solid rgba(34,197,94,.45)}
+.b-cli.app{border-left:2px solid var(--client-line)}
+.b-bot{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.18);border-bottom-right-radius:3px}
+.b-agent{background:var(--accent-soft);border:1px solid var(--accent-line);border-bottom-right-radius:3px}
+.row-l{display:flex;justify-content:flex-start}
+.row-r{display:flex;justify-content:flex-end}
+
+.sys{display:flex;justify-content:center}
+.sys div{padding:9px 17px;font-size:10.5px;color:var(--txt-dim);text-align:center;max-width:480px;
+  border-radius:10px;background:var(--bg-elev);border:1px dashed var(--border);line-height:1.5}
+
+.swdiv{display:flex;align-items:center;gap:10px;padding:8px 0}
+.swdiv .ln{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--border),transparent)}
+.swdiv .box{display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:20px;
+  background:var(--bg-elev);border:1px solid var(--accent-line);box-shadow:0 3px 16px rgba(225,29,46,.10)}
+.swdiv .box b{font-family:var(--f-mono);font-size:9px;color:var(--txt-ghost);font-weight:500}
+
+.typing{display:flex;gap:4px;padding:13px 16px;width:fit-content;border-radius:12px;
+  background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.18)}
+.typing i{width:6px;height:6px;border-radius:50%;background:#B49BFF;animation:typing 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.15s}
+.typing i:nth-child(3){animation-delay:.3s}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center}
+.empty .ic{width:66px;height:66px;border-radius:18px;background:var(--bg-elev);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.empty p{font-family:var(--f-display);font-size:13.5px;font-weight:600;color:var(--txt-dim)}
+.empty span{font-size:11.5px;margin-top:5px;color:var(--txt-ghost);max-width:290px;line-height:1.5}
+
+.c-input{padding:13px 20px;border-top:1px solid var(--border);background:var(--bg-panel);
+  display:flex;align-items:flex-end;gap:9px;flex-shrink:0}
+.c-input textarea{flex:1;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;
+  color:var(--txt);padding:11px 14px;font-size:13px;resize:none;max-height:110px;line-height:1.5;transition:.18s}
+.c-input textarea:focus{outline:none;border-color:var(--client);box-shadow:0 0 0 3px var(--client-soft)}
+.c-input textarea::placeholder{color:var(--txt-ghost)}
+
+/* intel */
+.isec{padding:16px;border-bottom:1px solid var(--border-soft)}
+.card{background:var(--bg-elev);border:1px solid var(--border);border-radius:11px;padding:13px}
+.irow{display:flex;justify-content:space-between;align-items:center;padding:6.5px 0;gap:10px}
+.irow+.irow{border-top:1px solid var(--border-soft)}
+.ilb{font-size:11px;color:var(--txt-ghost)}
+.ivl{font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:var(--txt-hi);text-align:right}
+
+.bar{width:100%;background:var(--bg-void);border-radius:4px;height:6px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--client),#60A5FA);
+  transition:width .9s cubic-bezier(.16,1,.3,1)}
+
+/* GAUGE — elemento de assinatura */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;padding-top:4px}
+.gauge-box{position:relative;width:210px;height:118px}
+.gauge-box svg{position:absolute;inset:0;overflow:visible}
+.g-arc{fill:none;stroke-width:13;stroke-linecap:round;
+  transition:stroke-dashoffset 1.05s cubic-bezier(.16,1,.3,1),stroke .5s}
+.g-center{position:absolute;left:0;right:0;bottom:2px;text-align:center;pointer-events:none}
+.g-val{font-family:var(--f-mono);font-size:44px;font-weight:800;line-height:1;letter-spacing:-2px;
+  transition:color .5s;display:block}
+.g-cap{font-size:8.5px;color:var(--txt-ghost);text-transform:uppercase;letter-spacing:1.6px;
+  font-weight:700;margin-top:5px;display:block}
+.g-badge{font-family:var(--f-display);font-size:10px;font-weight:800;padding:5px 18px;border-radius:20px;
+  letter-spacing:1.2px;margin-top:2px;transition:.5s}
+.g-delta{display:flex;align-items:center;gap:5px;margin-top:9px;font-family:var(--f-mono);
+  font-size:10.5px;font-weight:700}
+.spark{margin-top:11px;width:100%;height:34px;display:block}
+
+.tl-item{display:flex;gap:12px;padding-bottom:14px;position:relative}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{content:'';position:absolute;left:5px;top:16px;bottom:0;width:1px;background:var(--border)}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:3px;border:2px solid var(--bg-panel);z-index:1}
+.tl-t{font-family:var(--f-mono);font-size:9.5px;color:var(--txt-ghost)}
+.tl-x{font-size:11.5px;color:var(--txt);line-height:1.5;margin-top:2px}
+
+.act{width:100%;text-align:left;justify-content:flex-start;padding:11px 13px;font-size:11.5px}
+
+/* ---------- SIMULADORES ---------- */
+.sim-stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  background:radial-gradient(circle at 50% 0%,#111B2C 0%,var(--bg-void) 60%);position:relative;overflow:hidden}
+.sim-stage::before{content:'';position:absolute;inset:0;opacity:.35;
+  background-image:linear-gradient(var(--border-soft) 1px,transparent 1px),linear-gradient(90deg,var(--border-soft) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:radial-gradient(circle at 50% 40%,#000 0%,transparent 72%)}
+.sim-bar{position:relative;display:flex;align-items:center;gap:12px;padding:9px 14px;border-radius:11px;
+  background:var(--bg-panel);border:1px solid var(--border);z-index:2}
+.sim-bar label{font-size:10px;color:var(--txt-ghost);text-transform:uppercase;letter-spacing:1.1px;font-weight:700}
+.sim-bar select{background:var(--bg-input);border:1px solid var(--border);color:var(--txt-hi);
+  border-radius:8px;padding:7px 11px;font-size:11.5px;font-weight:600;cursor:pointer}
+.sim-bar select:focus{outline:none;border-color:var(--client)}
+.sim-hint{position:relative;z-index:2;font-size:11px;color:var(--txt-ghost);display:flex;align-items:center;gap:7px}
+
+.device{position:relative;z-index:2;width:400px;height:min(712px,76vh);border-radius:34px;padding:9px;
+  background:#05080F;border:1px solid #23304A;box-shadow:0 34px 90px rgba(0,0,0,.68),0 0 0 1px rgba(255,255,255,.03) inset;
+  display:flex;flex-direction:column}
+.dev-notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:112px;height:22px;
+  background:#05080F;border-radius:0 0 14px 14px;z-index:5}
+.screen{flex:1;border-radius:26px;overflow:hidden;display:flex;flex-direction:column;background:var(--bg-void)}
+
+.st-bar{height:30px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 3px;
+  font-family:var(--f-mono);font-size:10px;font-weight:700;color:var(--txt-hi);flex-shrink:0}
+.st-bar .ic{display:flex;gap:4px;align-items:center;opacity:.85}
+
+.app-head{padding:11px 15px;display:flex;align-items:center;gap:11px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.08)}
+.app-head .ttl{font-family:var(--f-display);font-size:14px;font-weight:700;color:#fff}
+.app-head .sb{font-size:10px;opacity:.75;margin-top:1px;display:flex;align-items:center;gap:5px}
+.head-claro{background:linear-gradient(120deg,#E11D2E,#B0121F);color:#fff}
+.head-wa{background:#075E54;color:#fff}
+.wa-body{background:#0B141A;background-image:radial-gradient(rgba(255,255,255,.022) 1px,transparent 1px);background-size:22px 22px}
+.app-body{background:var(--bg-void)}
+
+.chat-scroll{flex:1;overflow-y:auto;padding:14px 13px;display:flex;flex-direction:column;gap:9px}
+.sb-b{max-width:80%;padding:9px 12px;border-radius:13px;font-size:12.5px;line-height:1.55}
+.sb-out{align-self:flex-end;border-bottom-right-radius:4px}
+.sb-in{align-self:flex-start;border-bottom-left-radius:4px}
+.app-out{background:linear-gradient(135deg,#2563EB,#1D4ED8);color:#fff}
+.app-in{background:var(--bg-elev);border:1px solid var(--border);color:var(--txt)}
+.wa-out{background:#005C4B;color:#E9EDEF}
+.wa-in{background:#1F2C33;color:#E9EDEF}
+.sb-t{font-family:var(--f-mono);font-size:8.5px;opacity:.6;display:block;text-align:right;margin-top:4px}
+.sb-sys{align-self:center;background:rgba(255,255,255,.05);color:var(--txt-dim);font-size:10px;
+  padding:6px 13px;border-radius:9px;text-align:center;max-width:88%;line-height:1.45}
+
+.sim-input{padding:10px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.sim-input.app{background:var(--bg-panel);border-top:1px solid var(--border)}
+.sim-input.wa{background:#1F2C33}
+.sim-input input{flex:1;border-radius:20px;padding:10px 15px;font-size:12.5px;border:1px solid transparent}
+.sim-input.app input{background:var(--bg-input);border-color:var(--border);color:var(--txt)}
+.sim-input.wa input{background:#2A3942;color:#E9EDEF}
+.sim-input input:focus{outline:none;border-color:var(--client)}
+.sim-input input::placeholder{color:var(--txt-ghost)}
+.snd{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;color:#fff;transition:.16s}
+.snd.app{background:var(--accent)}
+.snd.app:hover{background:var(--accent-hi)}
+.snd.wa{background:#00A884}
+.snd.wa:hover{background:#06CF9C}
+
+.quick{display:flex;gap:6px;padding:0 12px 10px;flex-wrap:wrap;flex-shrink:0}
+.quick button{font-size:10px;padding:6px 11px;border-radius:14px;cursor:pointer;transition:.16s;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);color:var(--txt-dim)}
+.quick button:hover{background:rgba(255,255,255,.09);color:var(--txt-hi)}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:99;
+  background:var(--bg-elev);border:1px solid var(--accent-line);border-radius:11px;padding:12px 18px;
+  display:flex;align-items:center;gap:11px;box-shadow:0 12px 40px rgba(0,0,0,.6);opacity:0;
+  pointer-events:none;transition:.3s cubic-bezier(.16,1,.3,1)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
+.toast p{font-size:12px;font-weight:700;color:var(--txt-hi)}
+.toast span{font-size:10.5px;color:var(--txt-dim)}
+
+.proto-note{position:fixed;right:14px;bottom:14px;z-index:50;font-family:var(--f-mono);font-size:9px;
+  color:var(--txt-ghost);background:var(--bg-panel);border:1px solid var(--border);
+  padding:5px 10px;border-radius:6px;letter-spacing:.4px}
+</style>
+</head>
+<body>
+
+<!-- ============ TOPBAR ============ -->
+<nav class="topbar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+        <path d="M4 7h7M13 7h7M4 12h4M10 12h10M4 17h11M17 17h3"/>
+      </svg>
+    </div>
+    <span class="brand-text">Orquestra<i>CX</i></span>
+    <div class="vr"></div>
+    <span class="brand-sub" id="viewLabel">Dashboard do Atendente</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-view="dash"><span class="tdot"></span>Dashboard</button>
+    <button class="tab" data-view="app"><span class="tdot"></span>App Claro</button>
+    <button class="tab" data-view="wa"><span class="tdot"></span>WhatsApp</button>
+  </div>
+
+  <div class="tb-right">
+    <div class="conn">
+      <span class="dot pd"></span>
+      <span>API</span>
+      <b id="pollTick">poll 3s · 0s</b>
+    </div>
+    <div class="agent">
+      <div class="av">MR</div>
+      <div>
+        <p>Marcos Ribeiro</p>
+        <span>Atendimento N2 · Claro</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ VIEW: DASHBOARD ============ -->
+<div class="view on" id="v-dash">
+
+  <!-- FILA -->
+  <aside class="col-queue">
+    <div class="q-head">
+      <div class="row">
+        <p class="sec-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.4-1.8M17 20H7m10 0v-2c0-.7-.1-1.3-.4-1.8M7 20H2v-2a3 3 0 015.4-1.8M7 20v-2c0-.7.1-1.3.4-1.8m0 0a5 5 0 019.2 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Aguardando Handoff
+        </p>
+        <span class="q-count" id="qCount">0</span>
+      </div>
+      <div class="q-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="qSearch" placeholder="Buscar cliente ou protocolo..."/>
+      </div>
+    </div>
+    <div class="q-list" id="qList"></div>
+    <div class="q-stats">
+      <div><p class="lb">TME</p><p class="vl" style="color:var(--warn)" id="statTME">4m32s</p></div>
+      <div><p class="lb">TMA</p><p class="vl" style="color:var(--txt)" id="statTMA">8m15s</p></div>
+      <div><p class="lb">Crítico</p><p class="vl" style="color:var(--crit)" id="statCrit">0</p></div>
+    </div>
+  </aside>
+
+  <!-- CONVERSA -->
+  <main class="col-chat">
+    <div class="c-head">
+      <div class="cli">
+        <div class="c-av" id="chAv">?</div>
+        <div>
+          <p class="c-nm" id="chName">Selecione um atendimento</p>
+          <p class="c-sub" id="chSub">—</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-s" onclick="toast('Transferência','Fluxo não implementado no protótipo.')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4"/></svg>Transferir
+        </button>
+        <button class="btn btn-s" onclick="toast('Encerrar','Fluxo não implementado no protótipo.')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 18L18 6M6 6l12 12"/></svg>Encerrar
+        </button>
+      </div>
+    </div>
+
+    <div id="handoffSlot"></div>
+    <div class="c-msgs" id="chMsgs"></div>
+
+    <div class="c-input">
+      <button class="btn btn-s" style="padding:10px" onclick="toast('Anexos','Não implementado no protótipo.')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15.2 7l-6.6 6.6a2 2 0 102.8 2.8l6.4-6.6a4 4 0 00-5.6-5.6l-6.4 6.6a6 6 0 108.5 8.5L20.5 13"/></svg>
+      </button>
+      <textarea id="agentInput" rows="1" placeholder="Digite sua resposta ao cliente..."></textarea>
+      <button class="btn btn-p" id="btnSend" style="padding:11px 14px" onclick="agentSend()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- INTELIGÊNCIA -->
+  <aside class="col-intel" id="intel"></aside>
+</div>
+
+<!-- ============ VIEW: APP CLARO ============ -->
+<div class="view" id="v-app">
+  <div class="sim-stage">
+    <div class="sim-bar">
+      <label>Simulando cliente</label>
+      <select id="selApp" onchange="setSim(this.value)"></select>
+      <div class="vr"></div>
+      <span class="sim-hint">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--client)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+        POST /channels/app
+      </span>
+    </div>
+
+    <div class="device">
+      <div class="dev-notch"></div>
+      <div class="screen app-body">
+        <div class="st-bar" style="background:linear-gradient(120deg,#E11D2E,#B0121F)">
+          <span id="clkApp">14:32</span>
+          <span class="ic">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h3v-6H2v6zm5 0h3V8H7v12zm5 0h3V4h-3v16zm5 0h3v-9h-3v9z"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M4 8h14v8H4z" opacity=".9"/><path d="M19 10h2v4h-2z"/></svg>
+          </span>
+        </div>
+        <div class="app-head head-claro">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:800;font-size:13px">C</div>
+          <div style="flex:1">
+            <p class="ttl">Minha Claro</p>
+            <p class="sb"><span style="width:6px;height:6px;border-radius:50%;background:#4ADE80;display:inline-block"></span>Assistente virtual · online</p>
+          </div>
+        </div>
+        <div class="chat-scroll" id="appScroll"></div>
+        <div class="quick" id="appQuick"></div>
+        <div class="sim-input app">
+          <input id="appInput" placeholder="Mensagem..."/>
+          <button class="snd app" onclick="simSend('app')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <p class="sim-hint">Envie uma mensagem e volte ao <b style="color:var(--txt)">Dashboard</b> — a fila e o score reagem em tempo real.</p>
+  </div>
+</div>
+
+<!-- ============ VIEW: WHATSAPP ============ -->
+<div class="view" id="v-wa">
+  <div class="sim-stage">
+    <div class="sim-bar">
+      <label>Simulando cliente</label>
+      <select id="selWa" onchange="setSim(this.value)"></select>
+      <div class="vr"></div>
+      <span class="sim-hint">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+        POST /channels/whatsapp
+      </span>
+    </div>
+
+    <div class="device">
+      <div class="dev-notch"></div>
+      <div class="screen wa-body">
+        <div class="st-bar" style="background:#075E54">
+          <span id="clkWa">14:32</span>
+          <span class="ic">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h3v-6H2v6zm5 0h3V8H7v12zm5 0h3V4h-3v16zm5 0h3v-9h-3v9z"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M4 8h14v8H4z" opacity=".9"/><path d="M19 10h2v4h-2z"/></svg>
+          </span>
+        </div>
+        <div class="app-head head-wa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.5 15.3L2 22l4.8-1.4A10 10 0 1012 2z"/></svg>
+          </div>
+          <div style="flex:1">
+            <p class="ttl">Claro Brasil</p>
+            <p class="sb"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>Conta comercial verificada</p>
+          </div>
+        </div>
+        <div class="chat-scroll" id="waScroll"></div>
+        <div class="quick" id="waQuick"></div>
+        <div class="sim-input wa">
+          <input id="waInput" placeholder="Mensagem"/>
+          <button class="snd wa" onclick="simSend('whatsapp')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <p class="sim-hint">Mesmo cliente, outro canal — o Vortex detecta a migração e costura o contexto.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div style="width:32px;height:32px;border-radius:9px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-hi)" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
+  </div>
+  <div><p id="toastT">—</p><span id="toastD">—</span></div>
+</div>
+
+<div class="proto-note">PROTÓTIPO · dados mockados</div>
+
+<script>
+/* ============================================================
+   MOCK STORE — espelha o shape esperado da API FastAPI
+   ============================================================ */
+const now = () => { const d = new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+
+const DB = [
+  {
+    id:'A', protocolo:'2026-0816-77321', nome:'Ana Beatriz Souza', cpf:'***.412.889-**',
+    plano:'Claro Pós 40GB + Claro tv+', cliente_desde:'Mar 2019', canal:'whatsapp', origem:'app',
+    score:87, scoreIni:23, hist:[23,31,44,52,61,73,87], espera:412, msgPrev:'Já expliquei isso 3 vezes...',
+    intencao:{lb:'Contestação de Fatura', cf:94, ic:'🧾'},
+    handoff:'Score crítico + mesma intenção repetida em 2 canais em 18min',
+    tl:[
+      {t:'14:02', c:'app', x:'Abriu o app e iniciou chat com o bot — intenção "fatura"'},
+      {t:'14:09', c:'app', x:'Bot ofereceu 2ª via; cliente reformulou a pergunta 3x'},
+      {t:'14:14', c:'sw',  x:'Abandonou o App Claro e migrou para o WhatsApp'},
+      {t:'14:15', c:'wa',  x:'Reiniciou o atendimento do zero no novo canal'},
+      {t:'14:21', c:'crit',x:'Score cruzou 70 — handoff para humano acionado'}
+    ],
+    acoes:[
+      {x:'Emitir 2ª via com cobrança contestada suspensa', p:true},
+      {x:'Abrir chamado de auditoria de fatura', p:false},
+      {x:'Enviar histórico consolidado dos 2 canais', p:false}
+    ],
+    msgs:[
+      {s:'client', ch:'app', t:'14:02', x:'Oi, minha fatura veio R$ 189,90 mas meu plano é R$ 129,90. Tem uma cobrança que eu não reconheço.'},
+      {s:'bot',    ch:'app', t:'14:03', x:'Olá! Posso te ajudar com sua fatura. Deseja emitir a 2ª via do mês atual?'},
+      {s:'client', ch:'app', t:'14:04', x:'Não é 2ª via. Eu quero saber o que é essa cobrança de R$ 60,00.'},
+      {s:'bot',    ch:'app', t:'14:05', x:'Entendi! Para consultar sua fatura, acesse o menu Financeiro > Minhas Faturas.'},
+      {s:'client', ch:'app', t:'14:09', x:'Eu JÁ olhei lá. Só diz "serviços adicionais". Que serviço é esse??'},
+      {s:'sw', f:'APP CLARO', to:'WHATSAPP', t:'14:14'},
+      {s:'client', ch:'whatsapp', t:'14:15', x:'Boa tarde, preciso resolver uma cobrança indevida na minha fatura.'},
+      {s:'bot',    ch:'whatsapp', t:'14:15', x:'Olá! Sou o assistente da Claro. Sobre qual assunto você quer falar?'},
+      {s:'client', ch:'whatsapp', t:'14:18', x:'Já expliquei isso 3 vezes no aplicativo. Não vou explicar de novo. Quero falar com uma pessoa.'},
+      {s:'system', x:'⚡ Score de fricção atingiu 87 · Handoff inteligente acionado · Contexto dos 2 canais consolidado'}
+    ]
+  },
+  {
+    id:'B', protocolo:'2026-0816-77298', nome:'Ricardo Mendes Lima', cpf:'***.771.004-**',
+    plano:'Claro Fibra 500MB', cliente_desde:'Jan 2022', canal:'app', origem:'whatsapp',
+    score:64, scoreIni:18, hist:[18,26,35,41,55,64], espera:196, msgPrev:'A internet cai toda noite depois das 20h',
+    intencao:{lb:'Instabilidade de Conexão', cf:88, ic:'📡'},
+    handoff:'2 tentativas de troubleshooting automático sem resolução',
+    tl:[
+      {t:'13:48', c:'wa',  x:'Iniciou contato via WhatsApp — intenção "internet lenta"'},
+      {t:'13:55', c:'wa',  x:'Bot executou reset remoto do roteador'},
+      {t:'14:06', c:'sw',  x:'Migrou para o App Claro para acompanhar o chamado'},
+      {t:'14:12', c:'app', x:'Relatou que o problema persiste — score subiu para 64'}
+    ],
+    acoes:[
+      {x:'Agendar visita técnica (janela 24h)', p:true},
+      {x:'Consultar incidentes na região', p:false}
+    ],
+    msgs:[
+      {s:'client', ch:'whatsapp', t:'13:48', x:'Boa tarde. Minha internet cai toda noite depois das 20h, já faz uma semana.'},
+      {s:'bot',    ch:'whatsapp', t:'13:49', x:'Vou executar um diagnóstico remoto no seu roteador. Um instante.'},
+      {s:'bot',    ch:'whatsapp', t:'13:55', x:'Reset concluído! Pode testar novamente?'},
+      {s:'sw', f:'WHATSAPP', to:'APP CLARO', t:'14:06'},
+      {s:'client', ch:'app', t:'14:12', x:'Testei ontem e hoje. Continua caindo do mesmo jeito. O reset não resolveu nada.'},
+      {s:'system', x:'⚡ Troubleshooting automático esgotado · Encaminhado para suporte técnico N2'}
+    ]
+  },
+  {
+    id:'C', protocolo:'2026-0816-77340', nome:'Juliana Ferraz', cpf:'***.209.556-**',
+    plano:'Claro Controle 25GB', cliente_desde:'Set 2023', canal:'app', origem:'app',
+    score:38, scoreIni:12, hist:[12,19,27,38], espera:74, msgPrev:'Quero mudar a data de vencimento',
+    intencao:{lb:'Alteração de Vencimento', cf:96, ic:'📅'},
+    handoff:null,
+    tl:[
+      {t:'14:26', c:'app', x:'Abriu chat no App Claro'},
+      {t:'14:28', c:'app', x:'Bot identificou intenção com 96% de confiança'}
+    ],
+    acoes:[
+      {x:'Alterar vencimento para dia 15', p:true},
+      {x:'Simular impacto na próxima fatura', p:false}
+    ],
+    msgs:[
+      {s:'client', ch:'app', t:'14:26', x:'Oi! Quero mudar a data de vencimento da minha fatura pro dia 15.'},
+      {s:'bot',    ch:'app', t:'14:27', x:'Claro! Posso te ajudar. Confirmando: alterar o vencimento do dia 05 para o dia 15?'},
+      {s:'client', ch:'app', t:'14:28', x:'Isso mesmo. Mas queria confirmar se vai gerar cobrança proporcional.'}
+    ]
+  },
+  {
+    id:'D', protocolo:'2026-0816-77355', nome:'Carlos Eduardo Nunes', cpf:'***.884.130-**',
+    plano:'Claro Pós Família 80GB', cliente_desde:'Ago 2016', canal:'whatsapp', origem:'whatsapp',
+    score:21, scoreIni:9, hist:[9,14,21], espera:38, msgPrev:'Como adiciono uma linha no meu plano?',
+    intencao:{lb:'Upgrade de Plano', cf:82, ic:'📶'},
+    handoff:null,
+    tl:[{t:'14:30', c:'wa', x:'Iniciou contato via WhatsApp'}],
+    acoes:[{x:'Enviar simulação de plano família', p:true}],
+    msgs:[
+      {s:'client', ch:'whatsapp', t:'14:30', x:'Bom dia! Como adiciono uma linha no meu plano família?'},
+      {s:'bot',    ch:'whatsapp', t:'14:31', x:'Olá, Carlos! Seu plano permite até 5 linhas. Deseja simular a inclusão?'}
+    ]
+  }
+];
+
+let sel = null;          // protocolo selecionado no dashboard
+let simId = 'A';         // cliente ativo nos simuladores
+let filtro = '';
+let pollSec = 0;
+
+const byId = id => DB.find(c => c.id === id);
+const bySel = () => DB.find(c => c.protocolo === sel);
+
+/* ============================================================
+   FRICÇÃO — faixas de cor (vira lib/friction.js)
+   ============================================================ */
+function faixa(v){
+  if(v >= 70) return {cor:'#E11D2E', lb:'CRÍTICO',  bg:'rgba(225,29,46,.10)',  ln:'rgba(225,29,46,.30)'};
+  if(v >= 40) return {cor:'#F59E0B', lb:'ATENÇÃO',  bg:'rgba(245,158,11,.10)', ln:'rgba(245,158,11,.30)'};
+  return          {cor:'#22C55E', lb:'ESTÁVEL',  bg:'rgba(34,197,94,.10)',  ln:'rgba(34,197,94,.30)'};
+}
+const mmss = s => Math.floor(s/60)+'m'+String(s%60).padStart(2,'0')+'s';
+
+/* ============================================================
+   NAVEGAÇÃO
+   ============================================================ */
+const LABELS = {dash:'Dashboard do Atendente', app:'Simulador — App Claro', wa:'Simulador — WhatsApp'};
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.getElementById('v-' + t.dataset.view).classList.add('on');
+  document.getElementById('viewLabel').textContent = LABELS[t.dataset.view];
+  if(t.dataset.view !== 'dash') renderSim();
+});
+
+/* ============================================================
+   FILA
+   ============================================================ */
+function renderQueue(){
+  const list = DB.filter(c =>
+    c.nome.toLowerCase().includes(filtro) || c.protocolo.includes(filtro)
+  ).sort((a,b) => b.score - a.score);
+
+  document.getElementById('qCount').textContent = DB.length;
+  document.getElementById('statCrit').textContent = DB.filter(c => c.score >= 70).length;
+
+  document.getElementById('qList').innerHTML = list.map((c,i) => {
+    const f = faixa(c.score);
+    const isWa = c.canal === 'whatsapp';
+    return `<div class="qi ${sel===c.protocolo?'on':''} afu" style="animation-delay:${i*40}ms" onclick="selecionar('${c.protocolo}')">
+      <div class="top">
+        <span class="nm">${c.nome}</span>
+        <span class="pill ${isWa?'p-wa':'p-app'}">${isWa?'WA':'APP'}</span>
+      </div>
+      <p class="pv">${c.msgPrev}</p>
+      <div class="bot">
+        <span class="mini-score" style="background:${f.bg};color:${f.cor};border:1px solid ${f.ln}">${c.score}</span>
+        <span class="wait">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          ${mmss(c.espera)}
+        </span>
+      </div>
+    </div>`;
+  }).join('') || `<p style="padding:22px 14px;font-size:11.5px;color:var(--txt-ghost);text-align:center">Nenhum atendimento encontrado.</p>`;
+}
+
+document.getElementById('qSearch').oninput = e => { filtro = e.target.value.toLowerCase(); renderQueue(); };
+
+function selecionar(p){ sel = p; renderQueue(); renderChat(); renderIntel(); }
+
+/* ============================================================
+   CONVERSA
+   ============================================================ */
+function renderChat(){
+  const c = bySel();
+  const box = document.getElementById('chMsgs');
+  const slot = document.getElementById('handoffSlot');
+
+  if(!c){
+    document.getElementById('chAv').textContent = '?';
+    document.getElementById('chName').textContent = 'Selecione um atendimento';
+    document.getElementById('chSub').textContent = '—';
+    slot.innerHTML = '';
+    box.innerHTML = `<div class="empty">
+      <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--txt-ghost)" stroke-width="1.6"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <p>Nenhum atendimento aberto</p>
+      <span>Escolha um cliente na fila à esquerda para ver a conversa consolidada dos canais.</span>
+    </div>`;
+    return;
+  }
+
+  const ini = c.nome.split(' ').map(w=>w[0]).slice(0,2).join('');
+  document.getElementById('chAv').textContent = ini;
+  document.getElementById('chName').textContent = c.nome;
+  document.getElementById('chSub').textContent = `${c.protocolo} · ${c.cpf}`;
+
+  slot.innerHTML = c.handoff ? `<div class="handoff afu">
+    <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent-hi)" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+    <div style="flex:1">
+      <p class="tt">Handoff Inteligente Ativado</p>
+      <p class="ds">${c.handoff}</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+      <span class="pill ${c.origem==='app'?'p-app':'p-wa'}">${c.origem==='app'?'APP':'WA'}</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-hi)" stroke-width="2" stroke-linecap="round"><path d="M5 12h14m0 0l-5-5m5 5l-5 5"/></svg>
+      <span class="pill ${c.canal==='app'?'p-app':'p-wa'}">${c.canal==='app'?'APP':'WA'}</span>
+    </div>
+  </div>` : '';
+
+  box.innerHTML = c.msgs.map((m,i) => {
+    const d = `animation-delay:${Math.min(i*45,400)}ms`;
+    const nome1 = c.nome.split(' ')[0];
+
+    if(m.s === 'sw') return `<div class="swdiv afi" style="${d}">
+      <div class="ln"></div>
+      <div class="box">
+        <span class="pill ${m.f.includes('APP')?'p-app':'p-wa'}">${m.f}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-hi)" stroke-width="2" stroke-linecap="round"><path d="M5 12h14m0 0l-5-5m5 5l-5 5"/></svg>
+        <span class="pill ${m.to.includes('APP')?'p-app':'p-wa'}">${m.to}</span>
+        <b>${m.t}</b>
+      </div>
+      <div class="ln"></div>
+    </div>`;
+
+    if(m.s === 'system') return `<div class="sys afi" style="${d}"><div>${m.x}</div></div>`;
+
+    if(m.s === 'client') return `<div class="row-l afi" style="${d}">
+      <div class="bub b-cli ${m.ch==='app'?'app':'wa'}">
+        <div class="meta">
+          <span class="pill ${m.ch==='app'?'p-app':'p-wa'}">${m.ch==='app'?'APP CLARO':'WHATSAPP'}</span>
+          <span>${nome1} · ${m.t}</span>
+        </div>
+        <p>${m.x}</p>
+      </div></div>`;
+
+    if(m.s === 'bot') return `<div class="row-r afi" style="${d}">
+      <div class="bub b-bot">
+        <div class="meta" style="justify-content:flex-end">
+          <span>${m.t} · Bot IA</span><span class="pill p-bot">BOT</span>
+        </div>
+        <p>${m.x}</p>
+      </div></div>`;
+
+    return `<div class="row-r asl" style="${d}">
+      <div class="bub b-agent">
+        <div class="meta" style="justify-content:flex-end">
+          <span>${m.t} · Marcos R.</span><span class="pill p-agent">ATENDENTE</span>
+        </div>
+        <p>${m.x}</p>
+      </div></div>`;
+  }).join('');
+
+  box.scrollTop = box.scrollHeight;
+}
+
+function agentSend(){
+  const c = bySel(); const el = document.getElementById('agentInput');
+  const txt = el.value.trim();
+  if(!c || !txt) return;
+  c.msgs.push({s:'agent', t:now(), x:txt});
+  c.msgPrev = txt;
+  // atendimento humano reduz fricção
+  c.score = Math.max(5, c.score - 12);
+  c.hist.push(c.score);
+  el.value = '';
+  renderChat(); renderIntel(); renderQueue();
+  pushSim('agent', txt, c);
+}
+
+document.getElementById('agentInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); agentSend(); }
+});
+
+/* ============================================================
+   PAINEL DE INTELIGÊNCIA
+   ============================================================ */
+function renderIntel(){
+  const c = bySel();
+  const el = document.getElementById('intel');
+
+  if(!c){
+    el.innerHTML = `<div class="isec"><p class="sec-title">Inteligência do Atendimento</p>
+      <p style="font-size:11.5px;color:var(--txt-ghost);margin-top:12px;line-height:1.6">
+      Score de fricção, intenção detectada e histórico de canais aparecem aqui assim que você abrir um atendimento.</p></div>`;
+    return;
+  }
+
+  const f = faixa(c.score);
+  const delta = c.score - c.scoreIni;
+  const R = 84, LEN = Math.PI * R;
+  const off = LEN - (c.score/100) * LEN;
+
+  // ticks do arco
+  let ticks = '';
+  for(let i=0;i<=10;i++){
+    const a = Math.PI - (i/10)*Math.PI;
+    const x1 = 105 + Math.cos(a)*(R+11), y1 = 104 - Math.sin(a)*(R+11);
+    const x2 = 105 + Math.cos(a)*(R+ (i%5===0?17:14)), y2 = 104 - Math.sin(a)*(R+(i%5===0?17:14));
+    ticks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
+      stroke="${i*10 <= c.score ? f.cor : '#1F2A3D'}" stroke-width="${i%5===0?1.8:1.1}" opacity="${i*10<=c.score?.85:.5}"/>`;
+  }
+
+  // sparkline do histórico
+  const h = c.hist, mx = 100, W = 300, H = 30;
+  const pts = h.map((v,i) => `${(i/(h.length-1))*W},${H - (v/mx)*H}`).join(' ');
+
+  el.innerHTML = `
+  <!-- Cliente -->
+  <div class="isec">
+    <p class="sec-title">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--client)" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Cliente
+    </p>
+    <div style="margin-top:10px">
+      ${[['Protocolo',c.protocolo],['CPF',c.cpf],['Plano',c.plano],['Cliente desde',c.cliente_desde],
+         ['Canal atual',c.canal==='app'?'App Claro':'WhatsApp'],['Canal de origem',c.origem==='app'?'App Claro':'WhatsApp']]
+        .map(([l,v]) => `<div class="irow"><span class="ilb">${l}</span><span class="ivl">${v}</span></div>`).join('')}
+    </div>
+  </div>
+
+  <!-- Intenção -->
+  <div class="isec">
+    <p class="sec-title">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--client)" stroke-width="2"><path d="M9.7 17h4.6M12 3a6 6 0 00-3.5 10.9c.3.3.5.7.5 1.1h6c0-.4.2-.8.5-1.1A6 6 0 0012 3z"/></svg>
+      Intenção Detectada (NLP)
+    </p>
+    <div class="card" style="margin-top:10px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:11px">
+        <span style="font-size:24px">${c.intencao.ic}</span>
+        <div>
+          <p style="font-family:var(--f-display);font-size:14px;font-weight:700;color:var(--txt-hi)">${c.intencao.lb}</p>
+          <p class="mono" style="font-size:10px;color:var(--client);font-weight:700;margin-top:2px">Confiança ${c.intencao.cf}%</p>
+        </div>
+      </div>
+      <div class="bar"><i style="width:${c.intencao.cf}%"></i></div>
+    </div>
+  </div>
+
+  <!-- GAUGE -->
+  <div class="isec">
+    <p class="sec-title">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-hi)" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Score de Fricção
+    </p>
+    <div class="gauge-wrap">
+      <div class="gauge-box">
+        <svg viewBox="0 0 210 118" role="meter" aria-valuenow="${c.score}" aria-valuemin="0" aria-valuemax="100" aria-label="Score de fricção">
+          <defs>
+            <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="5" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          ${ticks}
+          <path class="g-arc" d="M 21 104 A ${R} ${R} 0 0 1 189 104" stroke="#1A2334"/>
+          <path class="g-arc" id="gArc" d="M 21 104 A ${R} ${R} 0 0 1 189 104"
+            stroke="${f.cor}" stroke-dasharray="${LEN.toFixed(1)}" stroke-dashoffset="${LEN.toFixed(1)}"
+            filter="${c.score>=70?'url(#glow)':'none'}"/>
+        </svg>
+        <div class="g-center">
+          <span class="g-val" id="gVal" style="color:${f.cor}">0</span>
+          <span class="g-cap">de 100 pontos</span>
+        </div>
+      </div>
+      <span class="g-badge" style="background:${f.bg};color:${f.cor};border:1px solid ${f.ln}">${f.lb}</span>
+      <div class="g-delta" style="color:${delta>0?f.cor:'var(--ok)'}">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+          <path d="${delta>0?'M12 19V5m0 0l-6 6m6-6l6 6':'M12 5v14m0 0l6-6m-6 6l-6-6'}"/>
+        </svg>
+        ${delta>0?'+':''}${delta} desde o início do atendimento
+      </div>
+      <svg class="spark" viewBox="0 0 300 30" preserveAspectRatio="none">
+        <polyline points="${pts}" fill="none" stroke="${f.cor}" stroke-width="1.8" stroke-linejoin="round" opacity=".75"/>
+        <circle cx="300" cy="${(H - (c.score/mx)*H).toFixed(1)}" r="2.6" fill="${f.cor}"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="isec">
+    <p class="sec-title">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--client)" stroke-width="2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4"/></svg>
+      Histórico de Canais
+    </p>
+    <div style="margin-top:12px">
+      ${c.tl.map((e,i) => {
+        const cor = e.c==='crit'?'var(--crit)':e.c==='sw'?'var(--accent-hi)':e.c==='wa'?'var(--ok)':'var(--client)';
+        return `<div class="tl-item afi" style="animation-delay:${i*70}ms">
+          <div class="tl-dot" style="background:${cor};box-shadow:0 0 0 3px ${cor}22"></div>
+          <div style="flex:1"><p class="tl-t">${e.t}</p><p class="tl-x">${e.x}</p></div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <!-- Ações -->
+  <div class="isec" style="border-bottom:none">
+    <p class="sec-title">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-hi)" stroke-width="2" stroke-linecap="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+      Ações Sugeridas
+    </p>
+    <div style="margin-top:11px;display:flex;flex-direction:column;gap:8px">
+      ${c.acoes.map((a,i) => `<button class="btn ${a.p?'btn-p':'btn-s'} act afi" style="animation-delay:${i*60}ms"
+        onclick="toast('Ação sugerida','${a.x}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0"><path d="M5 12h14m0 0l-5-5m5 5l-5 5"/></svg>
+        ${a.x}</button>`).join('')}
+    </div>
+  </div>`;
+
+  animarGauge(c.score, LEN, off);
+}
+
+/* count-up + preenchimento do arco */
+function animarGauge(alvo, LEN, off){
+  const arc = document.getElementById('gArc');
+  const val = document.getElementById('gVal');
+  if(!arc) return;
+  requestAnimationFrame(() => { arc.style.strokeDashoffset = off; });
+  const t0 = performance.now(), dur = 950;
+  (function step(t){
+    const p = Math.min((t - t0)/dur, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    val.textContent = Math.round(alvo * e);
+    if(p < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+/* ============================================================
+   SIMULADORES
+   ============================================================ */
+const QUICK = {
+  app:['Minha fatura veio errada','Quero cancelar um serviço','Falar com atendente'],
+  whatsapp:['Preciso de ajuda com a fatura','Minha internet está caindo','Quero falar com uma pessoa']
+};
+
+function fillSelects(){
+  const opts = DB.map(c => `<option value="${c.id}">${c.nome} · ${c.protocolo}</option>`).join('');
+  ['selApp','selWa'].forEach(id => { const s = document.getElementById(id); s.innerHTML = opts; s.value = simId; });
+}
+function setSim(id){ simId = id; fillSelects(); renderSim(); }
+
+function renderSim(){
+  const c = byId(simId);
+  ['app','whatsapp'].forEach(canal => {
+    const box = document.getElementById(canal === 'app' ? 'appScroll' : 'waScroll');
+    const msgs = c.msgs.filter(m => m.ch === canal || (m.s === 'agent'));
+    box.innerHTML = msgs.map(m => {
+      if(m.s === 'agent') return `<div class="sb-b sb-out ${canal==='app'?'app-in':'wa-in'} afi" style="border-left:2px solid #E11D2E">
+        <span style="font-size:9px;font-weight:800;color:#FF3B4E;display:block;margin-bottom:3px">ATENDENTE · MARCOS R.</span>
+        ${m.x}<span class="sb-t">${m.t}</span></div>`;
+      if(m.s === 'client') return `<div class="sb-b sb-out ${canal==='app'?'app-out':'wa-out'} afi">${m.x}<span class="sb-t">${m.t} ✓✓</span></div>`;
+      return `<div class="sb-b sb-in ${canal==='app'?'app-in':'wa-in'} afi">${m.x}<span class="sb-t">${m.t}</span></div>`;
+    }).join('') || `<p class="sb-sys">Nenhuma mensagem neste canal ainda. Envie a primeira.</p>`;
+    box.scrollTop = box.scrollHeight;
+
+    const q = document.getElementById(canal === 'app' ? 'appQuick' : 'waQuick');
+    q.innerHTML = QUICK[canal].map(t => `<button onclick="quick('${canal}','${t}')">${t}</button>`).join('');
+  });
+}
+
+function quick(canal, txt){
+  document.getElementById(canal === 'app' ? 'appInput' : 'waInput').value = txt;
+  simSend(canal);
+}
+
+function simSend(canal){
+  const c = byId(simId);
+  const el = document.getElementById(canal === 'app' ? 'appInput' : 'waInput');
+  const txt = el.value.trim();
+  if(!txt) return;
+  el.value = '';
+
+  // detecta troca de canal e registra o divisor + evento na timeline
+  const ultimo = [...c.msgs].reverse().find(m => m.ch);
+  if(ultimo && ultimo.ch !== canal){
+    const de = ultimo.ch === 'app' ? 'APP CLARO' : 'WHATSAPP';
+    const para = canal === 'app' ? 'APP CLARO' : 'WHATSAPP';
+    c.msgs.push({s:'sw', f:de, to:para, t:now()});
+    c.tl.push({t:now(), c:'sw', x:`Migrou de ${de} para ${para} — contexto costurado pelo Vortex`});
+    c.canal = canal;
+    bump(c, 16, 'Troca de canal detectada', `${de} → ${para} · score +16`);
+  }
+
+  c.msgs.push({s:'client', ch:canal, t:now(), x:txt});
+  c.msgPrev = txt;
+  c.canal = canal;
+  bump(c, 7);
+  renderSim(); renderQueue(); if(sel === c.protocolo){ renderChat(); renderIntel(); }
+
+  // resposta do bot
+  setTimeout(() => {
+    const box = document.getElementById(canal === 'app' ? 'appScroll' : 'waScroll');
+    box.insertAdjacentHTML('beforeend', `<div class="sb-b sb-in ${canal==='app'?'app-in':'wa-in'}" id="tp"><div class="typing" style="padding:0;background:none;border:none"><i></i><i></i><i></i></div></div>`);
+    box.scrollTop = box.scrollHeight;
+
+    setTimeout(() => {
+      document.getElementById('tp')?.remove();
+      const quer = /atendente|pessoa|humano|human/i.test(txt);
+      const resp = quer
+        ? 'Certo! Estou te transferindo para um de nossos especialistas. Aguarde um momento.'
+        : 'Entendi! Para consultar essa informação, acesse o menu Financeiro > Minhas Faturas no app.';
+      c.msgs.push({s:'bot', ch:canal, t:now(), x:resp});
+      bump(c, quer ? 22 : 9, quer ? 'Pedido explícito de humano' : null, quer ? 'Score de fricção +22' : null);
+      renderSim(); renderQueue(); if(sel === c.protocolo){ renderChat(); renderIntel(); }
+    }, 1100);
+  }, 500);
+}
+
+function bump(c, n, tt, td){
+  const antes = c.score;
+  c.score = Math.min(100, c.score + n);
+  c.hist.push(c.score);
+  if(antes < 70 && c.score >= 70){
+    c.handoff = c.handoff || 'Score de fricção cruzou o limiar crítico (70) — handoff automático';
+    c.msgs.push({s:'system', x:`⚡ Score de fricção atingiu ${c.score} · Handoff inteligente acionado`});
+    c.tl.push({t:now(), c:'crit', x:'Score cruzou 70 — handoff para humano acionado'});
+    toast('Handoff acionado', `${c.nome} · score ${c.score} · encaminhado para a fila`);
+  } else if(tt){
+    toast(tt, td);
+  }
+}
+
+/* ============================================================
+   TOAST + RELÓGIO + POLLING SIMULADO
+   ============================================================ */
+let tmr;
+function toast(t, d){
+  const el = document.getElementById('toast');
+  document.getElementById('toastT').textContent = t;
+  document.getElementById('toastD').textContent = d || '';
+  el.classList.add('on');
+  clearTimeout(tmr);
+  tmr = setTimeout(() => el.classList.remove('on'), 3400);
+}
+
+setInterval(() => {
+  const h = now();
+  document.getElementById('clkApp').textContent = h;
+  document.getElementById('clkWa').textContent = h;
+  DB.forEach(c => c.espera++);
+  pollSec = (pollSec + 1) % 3;
+  document.getElementById('pollTick').textContent = `poll 3s · ${pollSec}s`;
+  if(pollSec === 0) renderQueue();     // simula o ciclo de polling da fila
+}, 1000);
+
+/* ============ BOOT ============ */
+fillSelects();
+renderQueue();
+renderChat();
+renderIntel();
+selecionar('2026-0816-77321');
+</script>
+</body>
+</html>

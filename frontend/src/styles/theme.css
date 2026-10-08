@@ -1,0 +1,138 @@
+@import 'tailwindcss';
+
+/* ============================================================
+   TOKENS — os mesmos do protótipo, agora como tema do Tailwind v4.
+   Ficam disponíveis como utilitários: bg-panel, text-accent, font-mono...
+   ============================================================ */
+@theme {
+  /* Tema claro, como o Minha Claro: branco dominante, vermelho da marca.
+     Os neutros têm leve viés quente — um cinza frio ao lado do #E30613
+     encardece o vermelho. */
+  --color-void: #f1eeee;   /* canvas recuado (área de conversa) */
+  --color-panel: #ffffff;  /* painéis e barra superior */
+  --color-elev: #ffffff;   /* cartões e balões, separados por borda */
+  --color-input: #ffffff;
+  --color-border: #e2dbdc;
+  --color-border-soft: #eee8e9;
+
+  /* Vermelho oficial da Claro. No claro o hover escurece, não clareia. */
+  --color-claro: #e30613;
+  --color-claro-hi: #b3050f;
+  --color-claro-esc: #7a030a;
+  --color-claro-wash: #fdecee;
+
+  /* Canais: cada um com a cor da sua própria marca. */
+  --color-app: #e30613;
+  --color-wpp: #0e7a40;
+
+  /* Faixas do Score de Fricção — paleta de status reservada, validada sobre
+     fundo claro e distinta do vermelho da marca. */
+  --color-ok: #008a4e;
+  --color-warn: #9c6a00;
+  --color-crit: #b01020;
+
+  --color-bot: #6e6467;
+
+  --color-txt-hi: #171213;
+  --color-txt: #3e3639;
+  --color-txt-dim: #665d60;
+  --color-txt-ghost: #756b6e;
+
+  /* Piso de legibilidade. Nada que o atendente (ou a banca, de longe, num
+     projetor) precise ler fica abaixo de 11px. Rótulo = metadado, hora,
+     etiqueta, título de seção; apoio = texto secundário de uma linha. */
+  --text-rotulo: 11px;
+  --text-rotulo--line-height: 1.45;
+  --text-apoio: 12px;
+  --text-apoio--line-height: 1.5;
+
+  /* Séries dos gráficos (desfecho do atendimento). Paleta validada para
+     daltonismo (scripts do skill dataviz): sem azul, distinta do vermelho da
+     marca e das cores de status, que seguem reservadas. */
+  --color-serie-1: #1baf7a;  /* resolvido pelo bot */
+  --color-serie-2: #eb6834;  /* transferido com contexto */
+  --color-serie-3: #4a3aa7;  /* em andamento */
+  --color-sem-vortex: #a39a9c; /* cenário contrafactual: cinza de contexto */
+
+  /* Profundidade discreta: separa os painéis do fundo sem depender só de borda. */
+  --shadow-cartao: 0 1px 2px rgb(23 18 19 / 0.05), 0 4px 14px rgb(23 18 19 / 0.05);
+
+  --font-display: 'Sora', sans-serif;
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --animate-fade-up: fade-up 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-slide-l: slide-l 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-l {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(1.45); }
+}
+@keyframes typing-bounce {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--color-void);
+    color: var(--color-txt);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(23 18 19 / 0.16);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(227 6 19 / 0.45); }
+
+  ::selection { background: rgb(227 6 19 / 0.16); color: var(--color-txt-hi); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+/* ============================================================
+   UTILITÁRIOS
+   ============================================================ */
+@utility num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@utility scroll-area {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

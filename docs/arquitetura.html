@@ -1,0 +1,1222 @@
+<title>Vortex</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<style>
+/* ============================================================
+   IDENTIDADE CLARO
+   Vermelho como cor dominante, não como acento. Neutros com leve
+   viés quente para conversarem com o vermelho em vez de brigar.
+   ============================================================ */
+:root {
+  --claro:       #E30613;
+  --claro-esc:   #A8040E;
+  --claro-wash:  #FDECEE;
+
+  --ground:      #FFFFFF;
+  --surface:     #F7F4F4;
+  --surface-2:   #EDE8E9;
+  --ink:         #1A1517;
+  --ink-2:       #4E4649;
+  --ink-3:       #7C7276;
+  --rule:        #E4DEDF;
+  --rule-firm:   #C6BEC0;
+
+  /* Faixas do score — paleta de status, validada; vive só no gráfico. */
+  --ok:          #0F7A3D;
+  --warn:        #C98A00;
+  --crit:        #B01020;
+
+  --display: 'Barlow', 'Helvetica Neue', Arial, sans-serif;
+  --body:    'Source Sans 3', 'Segoe UI', Arial, sans-serif;
+  --mono:    'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --claro:      #FF4C56;
+    --claro-esc:  #FF7A82;
+    --claro-wash: #2C1417;
+    --ground:     #131011;
+    --surface:    #1D1819;
+    --surface-2:  #262021;
+    --ink:        #F2ECED;
+    --ink-2:      #B8ADAF;
+    --ink-3:      #8B8083;
+    --rule:       #302829;
+    --rule-firm:  #453B3D;
+    --ok:         #00A383;
+    --warn:       #C08312;
+    --crit:       #CE2B45;
+  }
+}
+
+:root[data-theme="dark"] {
+  --claro:      #FF4C56;
+  --claro-esc:  #FF7A82;
+  --claro-wash: #2C1417;
+  --ground:     #131011;
+  --surface:    #1D1819;
+  --surface-2:  #262021;
+  --ink:        #F2ECED;
+  --ink-2:      #B8ADAF;
+  --ink-3:      #8B8083;
+  --rule:       #302829;
+  --rule-firm:  #453B3D;
+  --ok:         #00A383;
+  --warn:       #C08312;
+  --crit:       #CE2B45;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16.5px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+.doc { max-width: 1140px; margin: 0 auto; padding: 0 28px 110px; }
+.doc > * { max-width: 70ch; margin-inline: auto; }
+.doc > figure, .doc > .wide, .doc > .capa { max-width: 1100px; }
+
+h1, h2, h3, .eyebrow, .metric, th, .chip, .btn, .rotulo {
+  font-family: var(--display);
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 72px 0 6px;
+  padding-top: 18px;
+  border-top: 3px solid var(--claro);
+  color: var(--ink);
+}
+
+h3 {
+  font-size: 18.5px;
+  font-weight: 700;
+  letter-spacing: -0.006em;
+  margin: 36px 0 7px;
+}
+
+p { margin: 0 0 17px; }
+strong { font-weight: 700; }
+a { color: var(--claro); text-underline-offset: 3px; }
+a:focus-visible, .btn:focus-visible {
+  outline: 2px solid var(--claro);
+  outline-offset: 3px;
+}
+
+code, .mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+code {
+  font-size: 0.85em;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--claro);
+  margin: 0 0 9px;
+}
+
+/* ============================================================
+   CAPA — campo vermelho pleno, marca em negativo
+   ============================================================ */
+.capa { display: flex; flex-direction: column; min-height: 96vh; margin-bottom: 60px; }
+
+.capa-topo {
+  background: var(--claro);
+  color: #fff;
+  padding: 62px 56px 52px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.capa-topo .marca {
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  margin: 0 0 auto;
+}
+
+.capa-topo h1 {
+  font-family: var(--display);
+  font-size: clamp(52px, 8vw, 88px);
+  font-weight: 800;
+  letter-spacing: -0.042em;
+  line-height: 0.98;
+  margin: 40px 0 0;
+  color: #fff;
+}
+
+.capa-topo .tagline {
+  font-family: var(--display);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 16px 0 0;
+  max-width: 30ch;
+  opacity: 0.96;
+}
+
+.capa-topo .lede {
+  font-size: 16.5px;
+  line-height: 1.55;
+  margin: 26px 0 0;
+  max-width: 56ch;
+  opacity: 0.92;
+}
+
+.capa-base { background: var(--ground); padding: 30px 56px 0; flex: 0 0 auto; }
+
+/* ============================================================
+   VÍDEO
+   ============================================================ */
+.video {
+  border: 2px solid var(--claro);
+  background: var(--claro-wash);
+  padding: 20px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.video .rotulo {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--claro);
+  margin: 0 0 3px;
+}
+.video .titulo {
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.012em;
+}
+.video .url {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  margin: 6px 0 0;
+  word-break: break-all;
+}
+.btn {
+  display: inline-block;
+  background: var(--claro);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 24px;
+  text-decoration: none;
+  white-space: nowrap;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.btn:hover { background: var(--claro-esc); }
+
+/* ============================================================
+   METADADOS E EQUIPE
+   ============================================================ */
+.meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin: 26px 0 0;
+  border-top: 2px solid var(--ink);
+}
+.meta div { padding: 13px 18px 13px 0; }
+.meta dt {
+  font-family: var(--display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 4px;
+}
+.meta dd { font-family: var(--mono); font-size: 12.5px; margin: 0; line-height: 1.45; }
+
+.equipe { margin: 20px 0 0; border-top: 1px solid var(--rule); padding-top: 18px; }
+.equipe ul {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px 30px;
+}
+.equipe li { display: flex; gap: 13px; align-items: baseline; font-size: 15px; }
+.equipe .rm {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--claro);
+  font-weight: 700;
+  min-width: 52px;
+}
+
+/* ============================================================
+   FIGURAS
+   ============================================================ */
+figure { margin: 32px 0; }
+.frame {
+  border: 1px solid var(--rule-firm);
+  border-top: 3px solid var(--claro);
+  background: var(--surface);
+  padding: 22px;
+  overflow-x: auto;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.frame svg { display: block; width: 100%; min-width: 640px; height: auto; }
+figure.tall .frame svg { min-width: 460px; max-width: 700px; margin: 0 auto; }
+
+figcaption {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin-top: 11px;
+  max-width: 70ch;
+}
+figcaption b {
+  font-family: var(--display);
+  font-weight: 700;
+  color: var(--claro);
+  font-size: 11.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-right: 8px;
+}
+
+/* Rótulos internos dos SVGs */
+.d-label { font-family: 'Barlow', sans-serif; font-size: 13.5px; font-weight: 600; fill: var(--ink); }
+.d-sub   { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; fill: var(--ink-3); }
+.d-band  { font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.13em; fill: var(--claro); }
+.d-edge  { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: var(--ink-2); }
+.d-num   { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; fill: #fff; }
+.d-box   { fill: var(--ground); stroke: var(--rule-firm); stroke-width: 1.5; }
+.d-panel { fill: none; stroke: var(--rule-firm); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.d-line  { stroke: var(--ink-2); stroke-width: 1.5; fill: none; }
+
+/* ============================================================
+   TABELAS
+   ============================================================ */
+.tw { overflow-x: auto; margin: 24px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 520px; }
+th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--claro);
+  padding: 8px 12px 8px 12px;
+  white-space: nowrap;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+td { padding: 10px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; line-height: 1.42; }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tbody tr:nth-child(even) { background: var(--surface); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+tbody tr:last-child td { border-bottom: 1px solid var(--rule-firm); }
+caption { caption-side: top; text-align: left; }
+
+/* ============================================================
+   COMPONENTES
+   ============================================================ */
+.chip {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border: 1.5px solid currentColor;
+  white-space: nowrap;
+}
+.c-ok { color: var(--ok); }
+.c-warn { color: var(--warn); }
+.c-crit { color: var(--crit); }
+
+.callout {
+  background: var(--claro);
+  color: #fff;
+  padding: 24px 28px;
+  margin: 28px auto;
+  font-size: 16.5px;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.callout .eyebrow { color: #fff; opacity: 0.82; }
+.callout p:last-child { margin-bottom: 0; }
+.callout strong { font-weight: 700; }
+
+.feature { border-top: 1px solid var(--rule); padding: 20px 0 2px; }
+.feature h3 { margin-top: 0; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 28px 0;
+  border-top: 3px solid var(--claro);
+}
+.stats div { padding: 16px 18px 16px 0; }
+.metric {
+  font-family: var(--display);
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  display: block;
+  color: var(--claro);
+}
+.stats .k {
+  font-family: var(--display);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 8px;
+  display: block;
+}
+
+ul.clean { margin: 0 0 18px; padding-left: 20px; }
+ul.clean li { margin-bottom: 8px; }
+ul.clean li::marker { color: var(--claro); }
+
+.foot {
+  border-top: 3px solid var(--claro);
+  margin-top: 64px;
+  padding-top: 16px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ============================================================
+   IMPRESSÃO / PDF
+   ============================================================ */
+@page { size: A4; margin: 15mm 13mm 14mm; }
+@page capa { size: A4; margin: 0; }
+
+@media print {
+  :root {
+    --ground: #FFFFFF;
+    --surface: #F7F4F4;
+    --surface-2: #EDE8E9;
+    --ink: #1A1517;
+    --ink-2: #453D40;
+    --ink-3: #74696D;
+    --rule: #DED8D9;
+    --rule-firm: #BFB7B9;
+    --claro: #E30613;
+    --claro-esc: #A8040E;
+    --claro-wash: #FDECEE;
+    --ok: #0F7A3D;
+    --warn: #C98A00;
+    --crit: #B01020;
+  }
+
+  * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+  body { background: #fff; font-size: 10.5pt; line-height: 1.48; }
+  .doc { max-width: none; padding: 0; }
+  .doc > *, .doc > figure, .doc > .wide, .doc > .capa { max-width: none; }
+
+  /* A capa ocupa uma página inteira, sem margens, para o vermelho sangrar. */
+  .capa { page: capa; break-after: page; height: 297mm; min-height: 0; margin: 0; }
+  .capa-topo { padding: 34mm 20mm 20mm; }
+  .capa-topo h1 { font-size: 62pt; }
+  .capa-topo .tagline { font-size: 15pt; }
+  .capa-topo .lede { font-size: 11pt; }
+  .capa-base { padding: 10mm 20mm 0; }
+
+  h2 {
+    font-size: 18pt;
+    margin: 24pt 0 4pt;
+    padding-top: 8pt;
+    break-after: avoid;
+    break-inside: avoid;
+  }
+  h3 { font-size: 12.5pt; break-after: avoid; }
+  p { orphans: 3; widows: 3; }
+
+  figure, .callout, .feature, .stats, .tw, .video, .meta, .equipe { break-inside: avoid; }
+  figcaption { break-before: avoid; }
+
+  .frame { padding: 8pt; overflow: visible; }
+  .frame svg { min-width: 0; width: 100%; }
+  figure.tall .frame svg { max-width: 460pt; }
+
+  /* Diagramas reduzidos à largura da página perdem legibilidade;
+     compensamos aumentando o tipo em unidades SVG. */
+  .d-label { font-size: 15.5px; }
+  .d-sub   { font-size: 12.5px; }
+  .d-band  { font-size: 12.5px; }
+  .d-edge  { font-size: 12px; }
+
+  table { min-width: 0; font-size: 9.5pt; }
+  .tw { overflow: visible; }
+  .metric { font-size: 26pt; }
+  .equipe li { font-size: 10.5pt; }
+  .equipe .rm { font-size: 9.5pt; min-width: 40pt; }
+  a { text-decoration: none; }
+
+  #video { break-before: page; }
+}
+</style>
+
+<div class="doc">
+
+<!-- ============================ CAPA ============================ -->
+<section class="capa">
+  <div class="capa-topo">
+    <p class="marca">Claro · Challenge FIAP 2026 · Turma 4SIT-2026</p>
+
+    <h1>Vortex</h1>
+    <p class="tagline">Orquestração inteligente de canais de atendimento</p>
+    <p class="lede">
+      O cliente que troca de canal não deveria recomeçar do zero. O Vortex
+      acompanha a conversa em todos os canais, mede a fricção acumulada em tempo real
+      e transfere para um atendente humano <em>antes</em> que o cliente precise pedir —
+      levando junto todo o histórico.
+    </p>
+  </div>
+
+  <div class="capa-base">
+    <div class="video">
+      <div>
+        <p class="rotulo">Vídeo de apresentação</p>
+        <p class="titulo">Demonstração da solução</p>
+        <p class="url">https://www.youtube.com/watch?v=8g-8A9QrEvI</p>
+      </div>
+      <a class="btn" href="https://www.youtube.com/watch?v=8g-8A9QrEvI" target="_blank" rel="noopener">Assistir no YouTube</a>
+    </div>
+
+    <dl class="meta">
+      <div><dt>Fase</dt><dd>MVP funcional<br>persistência em memória</dd></div>
+      <div><dt>Backend</dt><dd>Python 3.11+<br>FastAPI · Pydantic v2</dd></div>
+      <div><dt>Frontend</dt><dd>React 18 · Vite<br>Tailwind CSS v4</dd></div>
+      <div><dt>Cobertura</dt><dd>61 testes<br>100% aprovados</dd></div>
+    </dl>
+
+    <div class="equipe">
+      <p class="eyebrow">Integrantes</p>
+      <ul>
+        <li><span class="rm">551268</span> Gustavo Matos dos Santos</li>
+        <li><span class="rm">552528</span> Leonardo Franco de Oliveira</li>
+        <li><span class="rm">98342</span> Heitor Novaes dos Santos</li>
+        <li><span class="rm">551548</span> Pablo Samuel Rangel Quilaqueo Aguayo</li>
+        <li><span class="rm">552006</span> Enzo Gabriel Nascimento Campos</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PROBLEMA ============================ -->
+<h2>O problema</h2>
+
+<p>
+  Uma operadora atende o mesmo cliente por vários canais, e cada canal enxerga apenas
+  a si mesmo. O cliente abre o aplicativo, não resolve, migra para o WhatsApp — e o
+  atendimento recomeça do zero. Ele repete o CPF, repete o problema, repete a
+  frustração. Quando finalmente chega a um humano, já está exausto, e o atendente
+  recebe uma conversa sem passado.
+</p>
+
+<p>
+  Há duas perdas simultâneas: o <strong>contexto</strong>, que se dissolve na fronteira
+  entre canais, e o <strong>tempo</strong>, porque ninguém percebe que aquele cliente
+  específico já passou do ponto muito antes de ele escrever "quero falar com uma pessoa".
+</p>
+
+<div class="callout">
+  <p class="eyebrow">A tese do produto</p>
+  <p>
+    A insatisfação é observável antes de ser declarada. Repetir a mesma pergunta,
+    reformular a demanda, migrar de canal, escrever em caixa alta — são sinais
+    mensuráveis. Somados, antecipam a ruptura. O Vortex transforma esses sinais
+    em um número único, o <strong>Score de Fricção</strong>, e age quando ele cruza
+    um limiar.
+  </p>
+</div>
+
+<!-- ============================ ARQUITETURA ============================ -->
+<h2>Arquitetura da solução</h2>
+
+<p>
+  O sistema é uma camada de orquestração entre os canais de entrada e o painel do
+  atendente. Os canais falam formatos diferentes — o aplicativo envia um
+  <code>usuario_id</code>, o WhatsApp envia um envelope de webhook com telefone — e
+  ambos são traduzidos para um único caso de uso interno.
+</p>
+
+<figure>
+  <div class="frame">
+    <svg viewBox="0 0 1120 420" role="img"
+         aria-label="Diagrama de componentes: dois canais de entrada chegam a rotas REST, que acionam o Orquestrador e seus quatro serviços de domínio; os serviços conversam apenas com interfaces de repositório, que hoje apontam para dicionários em memória e na fase 2 apontarão para Redis, MongoDB e PostgreSQL.">
+      <defs>
+        <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/>
+        </marker>
+      </defs>
+
+      <text class="d-band" x="16"  y="24">CANAIS</text>
+      <text class="d-band" x="246" y="24">API REST</text>
+      <text class="d-band" x="496" y="24">DOMÍNIO</text>
+      <text class="d-band" x="756" y="24">REPOSITÓRIOS</text>
+      <text class="d-band" x="976" y="24">PERSISTÊNCIA</text>
+
+      <rect class="d-box" x="16" y="54"  width="170" height="52"/>
+      <text class="d-label" x="34" y="78">App Claro</text>
+      <text class="d-sub"   x="34" y="94">usuario_id</text>
+
+      <rect class="d-box" x="16" y="122" width="170" height="52"/>
+      <text class="d-label" x="34" y="146">WhatsApp</text>
+      <text class="d-sub"   x="34" y="162">telefone</text>
+
+      <rect class="d-box" x="16" y="344" width="170" height="52"/>
+      <text class="d-label" x="34" y="368">Painel do</text>
+      <text class="d-label" x="34" y="384">Atendente</text>
+
+      <rect class="d-box" x="246" y="54"  width="190" height="52"/>
+      <text class="d-sub" x="262" y="78" style="fill:var(--ink)">POST /channels/app</text>
+
+      <rect class="d-box" x="246" y="122" width="190" height="52"/>
+      <text class="d-sub" x="262" y="146" style="fill:var(--ink)">POST /channels/</text>
+      <text class="d-sub" x="262" y="162" style="fill:var(--ink)">whatsapp</text>
+
+      <rect class="d-box" x="246" y="344" width="190" height="52"/>
+      <text class="d-sub" x="262" y="368" style="fill:var(--ink)">GET /dashboard/</text>
+      <text class="d-sub" x="262" y="384" style="fill:var(--ink)">fila · atendimento</text>
+
+      <rect class="d-panel" x="496" y="40" width="200" height="272"/>
+      <rect x="510" y="54" width="172" height="48" fill="var(--claro)"/>
+      <text x="524" y="76" style="font-family:Barlow,sans-serif;font-size:14px;font-weight:700;fill:#fff">Orquestrador</text>
+      <text x="524" y="92" style="font-family:'JetBrains Mono',monospace;font-size:10px;fill:#fff;opacity:.85">caso de uso central</text>
+
+      <rect class="d-box" x="510" y="116" width="172" height="40"/>
+      <text class="d-label" x="524" y="141">NLPService</text>
+      <rect class="d-box" x="510" y="164" width="172" height="40"/>
+      <text class="d-label" x="524" y="189">FriccaoService</text>
+      <rect class="d-box" x="510" y="212" width="172" height="40"/>
+      <text class="d-label" x="524" y="237">SessaoService</text>
+      <rect class="d-box" x="510" y="260" width="172" height="40"/>
+      <text class="d-label" x="524" y="285">RespostaService</text>
+
+      <rect class="d-panel" x="756" y="40" width="180" height="272"/>
+      <rect class="d-box" x="770" y="58"  width="152" height="40"/>
+      <text class="d-label" x="782" y="83">ClienteRepo</text>
+      <rect class="d-box" x="770" y="106" width="152" height="40"/>
+      <text class="d-label" x="782" y="131">SessaoRepo</text>
+      <rect class="d-box" x="770" y="154" width="152" height="40"/>
+      <text class="d-label" x="782" y="179">ConversaRepo</text>
+      <rect class="d-box" x="770" y="202" width="152" height="40"/>
+      <text class="d-label" x="782" y="227">AtendimentoRepo</text>
+      <text class="d-sub" x="782" y="262">classes abstratas</text>
+      <text class="d-sub" x="782" y="277">todos os métodos</text>
+      <text class="d-sub" x="782" y="292">são async</text>
+
+      <rect class="d-panel" x="976" y="40" width="128" height="272"/>
+      <rect x="988" y="58" width="104" height="40" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5"/>
+      <text class="d-label" x="999" y="76">dict</text>
+      <text class="d-sub"   x="999" y="90">fase 1</text>
+
+      <text class="d-band" x="988" y="124" style="font-size:10px">FASE 2</text>
+      <rect class="d-box" x="988" y="134" width="104" height="36" stroke-dasharray="4 3"/>
+      <text class="d-label" x="999" y="157">Redis</text>
+      <rect class="d-box" x="988" y="178" width="104" height="36" stroke-dasharray="4 3"/>
+      <text class="d-label" x="999" y="201">MongoDB</text>
+      <rect class="d-box" x="988" y="222" width="104" height="36" stroke-dasharray="4 3"/>
+      <text class="d-label" x="999" y="245">PostgreSQL</text>
+
+      <line class="d-line" x1="186" y1="80"  x2="240" y2="80"  marker-end="url(#a1)"/>
+      <line class="d-line" x1="186" y1="148" x2="240" y2="148" marker-end="url(#a1)"/>
+      <line class="d-line" x1="186" y1="370" x2="240" y2="370" marker-end="url(#a1)"/>
+      <line class="d-line" x1="436" y1="80" x2="504" y2="80" marker-end="url(#a1)"/>
+      <polyline class="d-line" points="436,148 466,148 466,88 504,88" marker-end="url(#a1)"/>
+      <line class="d-line" x1="696" y1="176" x2="750" y2="176" marker-end="url(#a1)"/>
+      <text class="d-edge" x="723" y="196" text-anchor="middle">contrato</text>
+      <line class="d-line" x1="936" y1="176" x2="970" y2="176" marker-end="url(#a1)"/>
+      <polyline class="d-line" points="436,370 846,370 846,318" marker-end="url(#a1)" stroke-dasharray="5 4"/>
+      <text class="d-edge" x="520" y="362">leitura consolidada · polling a cada 3–4 s</text>
+    </svg>
+  </div>
+  <figcaption>
+    <b>Figura 1</b> Componentes e sentido das chamadas. O Orquestrador é o único ponto
+    que conhece o fluxo completo; os quatro serviços resolvem uma pergunta cada e não
+    se chamam entre si. Nenhum serviço enxerga o banco: todos falam com as interfaces
+    de repositório, e é por isso que a coluna de persistência pode ser trocada inteira
+    sem tocar no domínio.
+  </figcaption>
+</figure>
+
+<!-- ============================ FLUXO ============================ -->
+<h2>Fluxo de uma mensagem</h2>
+
+<p>
+  Toda mensagem, venha de qual canal vier, percorre a mesma sequência. O passo 2 é o
+  que sustenta a proposta de valor: se existe sessão viva para aquele cliente, o
+  protocolo é reaproveitado — mesmo que a mensagem tenha chegado por outro canal.
+</p>
+
+<figure class="tall">
+  <div class="frame">
+    <svg viewBox="0 0 700 592" role="img"
+         aria-label="Sequência de oito passos do processamento de uma mensagem, do reconhecimento do cliente até a decisão de transferir para atendimento humano quando o score de fricção atinge 70.">
+      <defs>
+        <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/>
+        </marker>
+        <marker id="a2r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--claro)"/>
+        </marker>
+      </defs>
+
+      <circle cx="30" cy="41" r="15" fill="var(--ink)"/>
+      <text class="d-num" x="30" y="45" text-anchor="middle">1</text>
+      <rect class="d-box" x="60" y="16" width="624" height="50"/>
+      <text class="d-label" x="78" y="39">Resolver identidade</text>
+      <text class="d-sub"   x="78" y="55">telefone ou usuario_id → cliente_id canônico</text>
+
+      <circle cx="30" cy="105" r="15" fill="var(--claro)"/>
+      <text class="d-num" x="30" y="109" text-anchor="middle">2</text>
+      <rect x="60" y="80" width="624" height="50" fill="var(--claro-wash)" stroke="var(--claro)" stroke-width="1.5"/>
+      <text class="d-label" x="78" y="103" style="fill:var(--claro-esc)">Obter ou criar sessão</text>
+      <text class="d-sub"   x="78" y="119" style="fill:var(--claro-esc)">sessão viva → MESMO protocolo, mesmo vindo de outro canal</text>
+
+      <circle cx="30" cy="169" r="15" fill="var(--ink)"/>
+      <text class="d-num" x="30" y="173" text-anchor="middle">3</text>
+      <rect class="d-box" x="60" y="144" width="624" height="50"/>
+      <text class="d-label" x="78" y="167">Classificar intenção</text>
+      <text class="d-sub"   x="78" y="183">NLP por regras ponderadas · 7 intenções · retorna confiança</text>
+
+      <circle cx="30" cy="233" r="15" fill="var(--ink)"/>
+      <text class="d-num" x="30" y="237" text-anchor="middle">4</text>
+      <rect class="d-box" x="60" y="208" width="624" height="50"/>
+      <text class="d-label" x="78" y="231">Registrar mensagem no histórico</text>
+      <text class="d-sub"   x="78" y="247">marcada com o canal de entrada</text>
+
+      <circle cx="30" cy="297" r="15" fill="var(--ink)"/>
+      <text class="d-num" x="30" y="301" text-anchor="middle">5</text>
+      <rect class="d-box" x="60" y="272" width="624" height="50"/>
+      <text class="d-label" x="78" y="295">Avaliar fricção</text>
+      <text class="d-sub"   x="78" y="311">9 detectores independentes · cada um devolve peso e justificativa</text>
+
+      <circle cx="30" cy="361" r="15" fill="var(--ink)"/>
+      <text class="d-num" x="30" y="365" text-anchor="middle">6</text>
+      <rect class="d-box" x="60" y="336" width="624" height="50"/>
+      <text class="d-label" x="78" y="359">Consolidar score e gravar auditoria</text>
+      <text class="d-sub"   x="78" y="375">um evento imutável por sinal detectado</text>
+
+      <path d="M350 412 L560 452 L350 492 L140 452 Z" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5"/>
+      <text class="d-label" x="350" y="450" text-anchor="middle">Score ≥ 70 ?</text>
+      <text class="d-sub"   x="350" y="466" text-anchor="middle">limiar de handoff</text>
+
+      <rect x="40" y="530" width="290" height="50" fill="var(--claro)"/>
+      <text x="58" y="553" style="font-family:Barlow,sans-serif;font-size:15.5px;font-weight:700;fill:#fff">Handoff acionado</text>
+      <text x="58" y="569" style="font-family:'JetBrains Mono',monospace;font-size:12.5px;fill:#fff;opacity:.9">vai à fila com o contexto</text>
+
+      <rect class="d-box" x="370" y="530" width="290" height="50"/>
+      <text class="d-label" x="388" y="553">Bot responde</text>
+      <text class="d-sub"   x="388" y="569">conforme a intenção</text>
+
+      <line class="d-line" x1="350" y1="66"  x2="350" y2="74"  marker-end="url(#a2)"/>
+      <line class="d-line" x1="350" y1="130" x2="350" y2="138" marker-end="url(#a2)"/>
+      <line class="d-line" x1="350" y1="194" x2="350" y2="202" marker-end="url(#a2)"/>
+      <line class="d-line" x1="350" y1="258" x2="350" y2="266" marker-end="url(#a2)"/>
+      <line class="d-line" x1="350" y1="322" x2="350" y2="330" marker-end="url(#a2)"/>
+      <line class="d-line" x1="350" y1="386" x2="350" y2="406" marker-end="url(#a2)"/>
+
+      <polyline class="d-line" points="140,452 100,452 100,524" marker-end="url(#a2r)" stroke="var(--claro)"/>
+      <text class="d-edge" x="106" y="492" style="fill:var(--claro)">sim</text>
+      <polyline class="d-line" points="560,452 600,452 600,524" marker-end="url(#a2)"/>
+      <text class="d-edge" x="566" y="492">não</text>
+    </svg>
+  </div>
+  <figcaption>
+    <b>Figura 2</b> Os oito passos do processamento. O ramo do handoff ocorre uma única
+    vez por atendimento: depois de transferido, o bot deixa de responder por intenção,
+    porque a conversa passou a pertencer a uma pessoa.
+  </figcaption>
+</figure>
+
+<!-- ============================ CONTINUIDADE ============================ -->
+<h2>Continuidade de contexto</h2>
+
+<p>
+  É aqui que o produto se diferencia. O WhatsApp conhece o cliente por um número de
+  telefone; o aplicativo, por um identificador de login. Sem uma identidade canônica
+  que ligue os dois, cada canal abre o seu próprio protocolo e a conversa anterior
+  desaparece.
+</p>
+
+<figure>
+  <div class="frame">
+    <svg viewBox="0 0 1120 316" role="img"
+         aria-label="Comparação: sem orquestração, App Claro e WhatsApp geram protocolos separados e o contexto se perde entre eles; com orquestração, os dois identificadores resolvem para um mesmo cliente e escrevem em um único protocolo.">
+      <defs>
+        <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-3)"/>
+        </marker>
+        <marker id="a3c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--claro)"/>
+        </marker>
+      </defs>
+
+      <!-- Sem orquestração: tudo em neutro. O contraste com o vermelho ao lado
+           é o próprio argumento visual. -->
+      <rect x="16" y="34" width="520" height="266" fill="none" stroke="var(--rule-firm)" stroke-width="1.5"/>
+      <text class="d-band" x="36" y="22" style="fill:var(--ink-3)">SEM ORQUESTRAÇÃO</text>
+
+      <rect class="d-box" x="44" y="76" width="150" height="46"/>
+      <text class="d-label" x="60" y="104" style="fill:var(--ink-2)">App Claro</text>
+      <rect class="d-box" x="44" y="210" width="150" height="46"/>
+      <text class="d-label" x="60" y="238" style="fill:var(--ink-2)">WhatsApp</text>
+
+      <rect class="d-box" x="286" y="76" width="222" height="46"/>
+      <text class="d-label" x="302" y="99" style="fill:var(--ink-2)">Protocolo A</text>
+      <text class="d-sub"   x="302" y="114">histórico do aplicativo</text>
+
+      <rect class="d-box" x="286" y="210" width="222" height="46"/>
+      <text class="d-label" x="302" y="233" style="fill:var(--ink-2)">Protocolo B</text>
+      <text class="d-sub"   x="302" y="248">vazio — cliente repete tudo</text>
+
+      <line class="d-line" x1="194" y1="99"  x2="280" y2="99"  marker-end="url(#a3)" stroke="var(--ink-3)"/>
+      <line class="d-line" x1="194" y1="233" x2="280" y2="233" marker-end="url(#a3)" stroke="var(--ink-3)"/>
+
+      <line x1="397" y1="128" x2="397" y2="158" stroke="var(--ink-3)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="397" y1="188" x2="397" y2="204" stroke="var(--ink-3)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="387" y1="163" x2="407" y2="183" stroke="var(--ink-3)" stroke-width="2.5"/>
+      <line x1="407" y1="163" x2="387" y2="183" stroke="var(--ink-3)" stroke-width="2.5"/>
+      <text class="d-edge" x="418" y="177" style="fill:var(--ink-3)">contexto perdido</text>
+
+      <!-- Com Vortex: vermelho Claro -->
+      <rect x="580" y="34" width="524" height="266" fill="none" stroke="var(--claro)" stroke-width="2"/>
+      <text class="d-band" x="600" y="22">COM VORTEX</text>
+
+      <rect class="d-box" x="606" y="76" width="150" height="46"/>
+      <text class="d-label" x="622" y="99">App Claro</text>
+      <text class="d-sub"   x="622" y="114">user_ana</text>
+
+      <rect class="d-box" x="606" y="210" width="150" height="46"/>
+      <text class="d-label" x="622" y="233">WhatsApp</text>
+      <text class="d-sub"   x="622" y="248">5511998877321</text>
+
+      <rect x="806" y="143" width="130" height="46" fill="var(--claro-wash)" stroke="var(--claro)" stroke-width="1.5"/>
+      <text class="d-label" x="820" y="166" style="fill:var(--claro-esc)">cliente_id</text>
+      <text class="d-sub"   x="820" y="181" style="fill:var(--claro-esc)">canônico</text>
+
+      <rect x="972" y="143" width="118" height="46" fill="var(--claro)"/>
+      <text x="986" y="166" style="font-family:Barlow,sans-serif;font-size:14px;font-weight:700;fill:#fff">Protocolo</text>
+      <text x="986" y="181" style="font-family:'JetBrains Mono',monospace;font-size:11px;fill:#fff;opacity:.9">único</text>
+
+      <polyline class="d-line" points="756,99 780,99 780,160 800,160" marker-end="url(#a3c)" stroke="var(--claro)"/>
+      <polyline class="d-line" points="756,233 780,233 780,172 800,172" marker-end="url(#a3c)" stroke="var(--claro)"/>
+      <line class="d-line" x1="936" y1="166" x2="966" y2="166" marker-end="url(#a3c)" stroke="var(--claro)"/>
+
+      <text class="d-edge" x="806" y="216" style="fill:var(--claro-esc)">a troca de canal vira um evento na linha do tempo,</text>
+      <text class="d-edge" x="806" y="231" style="fill:var(--claro-esc)">não um atendimento novo</text>
+    </svg>
+  </div>
+  <figcaption>
+    <b>Figura 3</b> A diferença que o produto introduz. Cada cliente tem um
+    <code>cliente_id</code> canônico e um mapa de identificadores por canal; enquanto a
+    sessão estiver viva, qualquer canal escreve no mesmo protocolo. A migração deixa de
+    ser uma perda e passa a ser um sinal medido.
+  </figcaption>
+</figure>
+
+<!-- ============================ MOTOR ============================ -->
+<h2>Motor de Score de Fricção</h2>
+
+<p>
+  Cada turno do cliente passa por nove detectores independentes. Todo detector que
+  dispara devolve um peso e uma justificativa em português, gravada como evento
+  imutável — o atendente vê não apenas o número, mas por que ele chegou lá.
+</p>
+
+<div class="tw">
+  <table>
+    <caption class="eyebrow">Sinais e pesos</caption>
+    <thead>
+      <tr><th>Sinal</th><th>Peso</th><th>Dispara quando</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Pedido de humano</td><td class="n">+25</td><td>o cliente pede um atendente explicitamente</td></tr>
+      <tr><td>Repetição</td><td class="n">+18</td><td>reenvia o mesmo texto ou reformula a mesma demanda</td></tr>
+      <tr><td>Troca de canal</td><td class="n">+16</td><td>migra de canal mantendo o assunto</td></tr>
+      <tr><td>Sentimento negativo</td><td class="n">+6 a +20</td><td>léxico de insatisfação, proporcional à intensidade</td></tr>
+      <tr><td>Intenção repetida</td><td class="n">+12</td><td>três turnos no mesmo assunto sem solução</td></tr>
+      <tr><td>Loop sem resolução</td><td class="n">+8 / turno</td><td>passa de quatro turnos com o bot (teto +24)</td></tr>
+      <tr><td>Impaciência</td><td class="n">+8</td><td>três mensagens em menos de 60 segundos</td></tr>
+      <tr><td>Caixa alta</td><td class="n">+5</td><td>60% ou mais da mensagem em maiúsculas</td></tr>
+      <tr><td>Decaimento</td><td class="n">−12</td><td>um atendente humano assume a conversa</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  O gráfico abaixo é a jornada real registrada pelo sistema, não uma ilustração. O
+  handoff dispara no quarto turno, quando a cliente escreve <em>"já expliquei isso três
+  vezes, isso é um absurdo"</em> — <strong>um turno antes</strong> de ela pedir um
+  atendente. O sistema se antecipou ao pedido.
+</p>
+
+<figure>
+  <div class="frame">
+    <svg viewBox="0 0 1000 378" role="img"
+         aria-label="Gráfico em cascata do score de fricção ao longo de cinco turnos: 0, 0, 18, 54, 82 e 100. O limiar de handoff, 70, é cruzado no quarto turno, quando o score chega a 82.">
+      <!-- Escala: y = 330 − score × 2,7  (0 → 330 · 100 → 60) -->
+      <line x1="112" y1="330" x2="960" y2="330" stroke="var(--rule-firm)" stroke-width="1.5"/>
+      <line x1="112" y1="222" x2="960" y2="222" stroke="var(--rule)" stroke-width="1" stroke-dasharray="3 4"/>
+      <line x1="112" y1="60"  x2="960" y2="60"  stroke="var(--rule)" stroke-width="1" stroke-dasharray="3 4"/>
+
+      <text class="d-sub" x="100" y="334" text-anchor="end">0</text>
+      <text class="d-sub" x="100" y="226" text-anchor="end">40</text>
+      <text class="d-sub" x="100" y="145" text-anchor="end">70</text>
+      <text class="d-sub" x="100" y="64"  text-anchor="end">100</text>
+
+      <line x1="112" y1="141" x2="960" y2="141" stroke="var(--crit)" stroke-width="1.5" stroke-dasharray="7 4"/>
+      <text class="d-edge" x="960" y="134" text-anchor="end" style="fill:var(--crit);font-weight:700">LIMIAR DE HANDOFF = 70</text>
+
+      <rect x="132" y="326" width="132" height="4" fill="var(--ok)"/>
+      <text class="d-sub" x="198" y="316" text-anchor="middle" style="fill:var(--ink);font-weight:700">0</text>
+
+      <rect x="292" y="281.4" width="132" height="48.6" fill="var(--ok)"/>
+      <text class="d-sub" x="358" y="271" text-anchor="middle" style="fill:var(--ink);font-weight:700">18</text>
+
+      <rect x="452" y="184.2" width="132" height="97.2" fill="var(--warn)"/>
+      <text class="d-sub" x="518" y="174" text-anchor="middle" style="fill:var(--ink);font-weight:700">54</text>
+
+      <rect x="612" y="108.6" width="132" height="75.6" fill="var(--crit)"/>
+      <text class="d-sub" x="678" y="98" text-anchor="middle" style="fill:var(--crit);font-weight:700">82</text>
+
+      <rect x="772" y="60" width="132" height="48.6" fill="var(--crit)" opacity="0.55"/>
+      <text class="d-sub" x="838" y="50" text-anchor="middle" style="fill:var(--ink);font-weight:700">100</text>
+
+      <circle cx="678" cy="108.6" r="5" fill="var(--ground)" stroke="var(--crit)" stroke-width="2.5"/>
+
+      <text class="d-sub" x="198" y="352" text-anchor="middle">turno 1</text>
+      <text class="d-sub" x="198" y="366" text-anchor="middle">APP</text>
+      <text class="d-sub" x="358" y="352" text-anchor="middle">turno 2</text>
+      <text class="d-sub" x="358" y="366" text-anchor="middle">APP</text>
+      <text class="d-sub" x="518" y="352" text-anchor="middle">turno 3</text>
+      <text class="d-sub" x="518" y="366" text-anchor="middle">WHATSAPP</text>
+      <text class="d-sub" x="678" y="352" text-anchor="middle" style="fill:var(--crit);font-weight:700">turno 4</text>
+      <text class="d-sub" x="678" y="366" text-anchor="middle" style="fill:var(--crit);font-weight:700">WHATSAPP</text>
+      <text class="d-sub" x="838" y="352" text-anchor="middle">turno 5</text>
+      <text class="d-sub" x="838" y="366" text-anchor="middle">WHATSAPP</text>
+
+      <text class="d-edge" x="678" y="80" text-anchor="middle" style="fill:var(--crit);font-weight:700">handoff dispara aqui</text>
+    </svg>
+  </div>
+  <figcaption>
+    <b>Figura 4</b> Trajetória real do score na jornada de Ana Beatriz Souza. Cada barra
+    é o acréscimo de um turno; a cor indica a faixa alcançada —
+    <span class="chip c-ok">estável</span>
+    <span class="chip c-warn">atenção</span>
+    <span class="chip c-crit">crítico</span>.
+    O turno 5, já depois da transferência, apenas satura o score em 100.
+  </figcaption>
+</figure>
+
+<div class="tw">
+  <table>
+    <caption class="eyebrow">Os mesmos dados, em tabela</caption>
+    <thead>
+      <tr><th>Turno</th><th>Canal</th><th>Score</th><th>Δ</th><th>Faixa</th><th>Sinais detectados</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="n">1</td><td>App Claro</td><td class="n">0</td><td class="n">—</td><td><span class="chip c-ok">estável</span></td><td>nenhum</td></tr>
+      <tr><td class="n">2</td><td>App Claro</td><td class="n">18</td><td class="n">+18</td><td><span class="chip c-ok">estável</span></td><td>repetição +18</td></tr>
+      <tr><td class="n">3</td><td>WhatsApp</td><td class="n">54</td><td class="n">+36</td><td><span class="chip c-warn">atenção</span></td><td>troca de canal +16 · intenção repetida +12 · impaciência +8</td></tr>
+      <tr><td class="n">4</td><td>WhatsApp</td><td class="n">82</td><td class="n">+28</td><td><span class="chip c-crit">crítico · handoff</span></td><td>sentimento negativo +20 · impaciência +8</td></tr>
+      <tr><td class="n">5</td><td>WhatsApp</td><td class="n">100</td><td class="n">+18</td><td><span class="chip c-crit">crítico</span></td><td>pedido de humano +25 · caixa alta +5 · loop +8</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================ FUNCIONALIDADES ============================ -->
+<h2>Funcionalidades</h2>
+
+<div class="feature">
+  <p class="eyebrow">Entrada</p>
+  <h3>Recepção multicanal com tradução de formato</h3>
+  <p>
+    Dois endpoints recebem mensagens em formatos distintos: o aplicativo envia
+    identificador de login, versão e dispositivo; o WhatsApp envia um envelope de
+    webhook com telefone e identificador de mensagem. Ambos são convertidos para uma
+    única chamada interna, e é por isso que acrescentar um terceiro canal — uma URA,
+    um chat no site — custa cerca de quinze linhas na camada de rotas e nada no
+    domínio.
+  </p>
+</div>
+
+<div class="feature">
+  <p class="eyebrow">Identidade</p>
+  <h3>Resolução de cliente entre canais</h3>
+  <p>
+    Cada cliente tem um <code>cliente_id</code> canônico e um mapa de identificadores
+    por canal. O telefone <code>5511998877321</code> e o login <code>user_ana</code>
+    apontam para a mesma pessoa, e é essa tradução que permite reconhecer, no primeiro
+    contato pelo WhatsApp, que aquela conversa começou no aplicativo vinte minutos antes.
+  </p>
+</div>
+
+<div class="feature">
+  <p class="eyebrow">Classificação</p>
+  <h3>Detecção de intenção por regras ponderadas</h3>
+  <p>
+    Um classificador léxico determinístico atribui a mensagem a uma de sete intenções —
+    suporte técnico, financeiro, contestação de fatura, segunda via, planos, cancelamento
+    ou não classificada. Cada termo tem peso, e a confiança combina o quanto a intenção
+    vencedora se destaca das concorrentes com a força absoluta da evidência encontrada.
+  </p>
+  <p>
+    A escolha por regras em vez de um modelo estatístico foi deliberada: roda em
+    microssegundos, o que ajuda no requisito de resposta abaixo de dois segundos, e é
+    inteiramente explicável — o painel consegue mostrar quais termos levaram àquela
+    classificação.
+  </p>
+</div>
+
+<div class="feature">
+  <p class="eyebrow">Medição</p>
+  <h3>Score de Fricção com trilha de auditoria</h3>
+  <p>
+    Nove detectores avaliam cada turno e o score acumula entre 0 e 100. Dois merecem
+    destaque. O de <strong>repetição</strong> reconhece duas formas de repetir: o
+    reenvio quase literal e a reformulação — quando o cliente reescreve a mesma demanda
+    com outras palavras, geralmente mais curto. A comparação de texto inteiro perde esse
+    segundo caso porque penaliza diferença de comprimento, então o sistema também mede a
+    sobreposição de palavras de conteúdo.
+  </p>
+  <p>
+    O de <strong>troca de canal</strong> registra o canal anterior, não o de origem —
+    numa jornada que vai do aplicativo ao WhatsApp e volta, dizer "App Claro → App Claro"
+    seria falso. Cada sinal detectado vira uma linha imutável com peso, score resultante
+    e descrição legível.
+  </p>
+</div>
+
+<div class="feature">
+  <p class="eyebrow">Decisão</p>
+  <h3>Handoff antecipado com contexto consolidado</h3>
+  <p>
+    Ao cruzar 70, o atendimento entra na fila com status de espera por humano e o bot
+    para de responder por intenção — seria errado o robô insistir em algo já escalado
+    para uma pessoa. O atendente recebe o histórico completo dos dois canais, a intenção
+    consolidada, a trajetória do score e a lista de sinais que motivaram a transferência.
+    O disparo acontece uma única vez por atendimento.
+  </p>
+</div>
+
+<div class="feature">
+  <p class="eyebrow">Operação</p>
+  <h3>Painel do atendente</h3>
+  <p>
+    Três colunas: a fila ordenada por score, a conversa unificada com marcação visual do
+    ponto exato em que o cliente trocou de canal, e o painel de inteligência com o
+    medidor de fricção, a intenção detectada e o histórico de sinais. A atualização é
+    por consulta periódica a cada três a quatro segundos, com proteção contra requisições
+    sobrepostas, pausa quando a aba está oculta e recuo progressivo em caso de erro.
+  </p>
+  <p>
+    Quando o atendente responde, o score cai doze pontos e a resposta aparece no
+    aplicativo do cliente na consulta seguinte.
+  </p>
+</div>
+
+<div class="feature">
+  <p class="eyebrow">Demonstração</p>
+  <h3>Simuladores de canal</h3>
+  <p>
+    Duas telas reproduzem o aparelho do cliente — o aplicativo da Claro e o WhatsApp —
+    permitindo demonstrar a continuidade de contexto ao vivo, sem depender de canais
+    reais. As sugestões de resposta são contextuais: evoluem conforme a intenção
+    detectada e o estágio da conversa, conduzindo naturalmente da abertura da demanda
+    até a escalada que provoca o handoff.
+  </p>
+</div>
+
+<!-- ============================ DESACOPLAMENTO ============================ -->
+<h2>Desacoplamento e migração</h2>
+
+<p>
+  A arquitetura final prevê Redis para sessão, MongoDB para histórico conversacional e
+  PostgreSQL para dados estruturados e auditoria. Esta fase entrega o MVP com estruturas
+  em memória — mas modeladas no formato de destino, para que a troca não exija reescrita.
+</p>
+
+<figure>
+  <div class="frame">
+    <svg viewBox="0 0 1000 258" role="img"
+         aria-label="A dependência aponta sempre para dentro: rotas dependem de serviços, que dependem de interfaces de repositório, que dependem do domínio. As implementações concretas entram apenas pelo arquivo de injeção de dependências.">
+      <defs>
+        <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/>
+        </marker>
+      </defs>
+
+      <rect class="d-box" x="20"  y="40" width="212" height="62"/>
+      <text class="d-label" x="38" y="66">routers</text>
+      <text class="d-sub"   x="38" y="84">camada HTTP</text>
+
+      <rect class="d-box" x="272" y="40" width="212" height="62"/>
+      <text class="d-label" x="290" y="66">services</text>
+      <text class="d-sub"   x="290" y="84">regra de negócio</text>
+
+      <rect x="524" y="40" width="212" height="62" fill="var(--claro-wash)" stroke="var(--claro)" stroke-width="2"/>
+      <text class="d-label" x="542" y="66" style="fill:var(--claro-esc)">repositories/base</text>
+      <text class="d-sub"   x="542" y="84" style="fill:var(--claro-esc)">interfaces abstratas</text>
+
+      <rect class="d-box" x="776" y="40" width="204" height="62"/>
+      <text class="d-label" x="794" y="66">domain</text>
+      <text class="d-sub"   x="794" y="84">entidades puras</text>
+
+      <line class="d-line" x1="232" y1="71" x2="266" y2="71" marker-end="url(#a4)"/>
+      <line class="d-line" x1="484" y1="71" x2="518" y2="71" marker-end="url(#a4)"/>
+      <line class="d-line" x1="736" y1="71" x2="770" y2="71" marker-end="url(#a4)"/>
+
+      <line x1="20" y1="126" x2="980" y2="126" stroke="var(--rule-firm)" stroke-width="1"/>
+      <text class="d-edge" x="20" y="144">A dependência aponta sempre para a direita — nunca o inverso.</text>
+
+      <rect class="d-box" x="524" y="176" width="212" height="62" stroke-dasharray="4 3"/>
+      <text class="d-label" x="542" y="202">memory · redis</text>
+      <text class="d-label" x="542" y="220">mongo · postgres</text>
+
+      <line class="d-line" x1="630" y1="170" x2="630" y2="108" marker-end="url(#a4)" stroke-dasharray="5 4"/>
+      <text class="d-edge" x="646" y="146">implementam o contrato</text>
+
+      <rect x="776" y="176" width="204" height="62" fill="var(--claro)"/>
+      <text x="794" y="200" style="font-family:Barlow,sans-serif;font-size:15px;font-weight:700;fill:#fff">dependencies.py</text>
+      <text x="794" y="218" style="font-family:'JetBrains Mono',monospace;font-size:12px;fill:#fff;opacity:.9">a única costura</text>
+      <line class="d-line" x1="770" y1="207" x2="742" y2="207" marker-end="url(#a4)"/>
+    </svg>
+  </div>
+  <figcaption>
+    <b>Figura 5</b> Regra de dependência e ponto de troca. Todos os métodos de
+    repositório já são assíncronos, ainda que hoje sejam dicionários — é o que permite
+    plugar <code>redis.asyncio</code>, <code>motor</code> e <code>asyncpg</code> sem
+    alterar nenhuma assinatura nos serviços. A migração para a fase 2 altera quatro
+    linhas de <code>dependencies.py</code>.
+  </figcaption>
+</figure>
+
+<div class="tw">
+  <table>
+    <thead>
+      <tr><th>Repositório</th><th>Fase 1 (atual)</th><th>Fase 2</th><th>Chave / esquema</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Sessão</td><td>dicionário com expiração preguiçosa</td><td>Redis</td><td class="n">sessao:{cliente_id} · TTL 1800 s</td></tr>
+      <tr><td>Conversa</td><td>lista por protocolo</td><td>MongoDB</td><td class="n">um documento por protocolo</td></tr>
+      <tr><td>Cliente</td><td>dicionário com índice secundário</td><td>PostgreSQL</td><td class="n">UNIQUE(canal, identificador)</td></tr>
+      <tr><td>Atendimento</td><td>dicionário e lista de eventos</td><td>PostgreSQL</td><td class="n">atendimentos + eventos_friccao</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================ EVIDÊNCIAS ============================ -->
+<h2>Evidências de execução</h2>
+
+<div class="stats">
+  <div><span class="metric">61</span><span class="k">Testes aprovados</span></div>
+  <div><span class="metric">0,76<span style="font-size:16px"> ms</span></span><span class="k">Latência máxima</span></div>
+  <div><span class="metric">2000<span style="font-size:16px"> ms</span></span><span class="k">Orçamento do requisito</span></div>
+  <div><span class="metric">7</span><span class="k">Endpoints REST</span></div>
+</div>
+
+<p>
+  O requisito não funcional de resposta abaixo de dois segundos é verificado por teste
+  automatizado a cada execução. As medições reais ficam entre 0,39 ms e 0,76 ms — três
+  ordens de grandeza de folga, resultado de manter o NLP determinístico e a avaliação de
+  fricção em memória.
+</p>
+
+<p>
+  A suíte cobre o classificador de intenção, cada um dos nove detectores de fricção, a
+  saturação e os limiares do score, a continuidade entre canais em jornadas de ida e
+  volta, o disparo único do handoff e o payload completo do painel. Os testes são
+  também a rede de segurança da migração: se continuarem passando depois da troca por
+  bancos reais, a lógica de negócio não mudou.
+</p>
+
+<h3>Decisões que a suíte protege</h3>
+
+<ul class="clean">
+  <li>
+    <strong>A intenção consolidada não é sobrescrita por uma classificação vazia.</strong>
+    Um turno final como "QUERO UM ATENDENTE" não carrega assunto de negócio; se
+    sobrescrevesse, apagaria "Contestação de Fatura" exatamente no payload que o
+    atendente vai ler. Esse defeito existiu no código e foi encontrado por um teste.
+  </li>
+  <li>
+    <strong>O limiar mora em um lugar só.</strong> A faixa de fricção é derivada
+    unicamente no serviço; a entidade não replica os valores 40 e 70, para não haver
+    dois pontos de calibração e um deles ser esquecido.
+  </li>
+  <li>
+    <strong>O handoff não redispara.</strong> Depois de transferido, novos sinais
+    continuam elevando o score e alimentando a auditoria, mas não reabrem a
+    transferência.
+  </li>
+</ul>
+
+<!-- ============================ VÍDEO ============================ -->
+<h2 id="video">Vídeo de apresentação</h2>
+
+<p>
+  A gravação percorre a jornada completa: a cliente inicia o contato pelo aplicativo,
+  migra para o WhatsApp, o score cruza o limiar, o handoff dispara e o atendente assume
+  a conversa já com todo o histórico consolidado à frente.
+</p>
+
+<div class="video">
+  <div>
+    <p class="rotulo">Link de acesso</p>
+    <p class="titulo">Assistir à demonstração</p>
+    <p class="url">https://www.youtube.com/watch?v=8g-8A9QrEvI</p>
+  </div>
+  <a class="btn" href="https://www.youtube.com/watch?v=8g-8A9QrEvI" target="_blank" rel="noopener">Assistir no YouTube</a>
+</div>
+
+<p class="foot">
+  Vortex · Challenge FIAP + Claro 2026 · Turma 4SIT-2026 · Documento de arquitetura
+  da solução. Fase 1: MVP funcional com persistência em memória, modelada para migração
+  a Redis, MongoDB e PostgreSQL.
+</p>
+
+</div>

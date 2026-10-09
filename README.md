@@ -5,6 +5,15 @@ Challenge FIAP + Claro 2026 · turma 4SIT-2026
 
 > Um protocolo, um cliente, nenhuma história repetida.
 
+**🌐 Acesse o Vortex:** https://vortex-claro-2026.onrender.com
+(no plano gratuito, o primeiro acesso pode levar cerca de 1 minuto)
+
+## 🎥 Vídeo de demonstração
+
+[![Assista à demonstração do Vortex no YouTube](https://img.youtube.com/vi/AH6rnTh0_UQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=AH6rnTh0_UQ)
+
+**Assista:** https://www.youtube.com/watch?v=AH6rnTh0_UQ
+
 ![Dashboard do atendente com a fila ordenada pelo Score de Fricção](docs/img/01-dashboard-fila.png)
 
 ---
